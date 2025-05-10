@@ -35,7 +35,9 @@
 				F243F3A82DCE57D3002EBB09 /* SimClicker */,
 				F243F3A72DCE57D3002EBB09 /* Products */,
 			);
+			indentWidth = 4;
 			sourceTree = "<group>";
+			tabWidth = 4;
 		};
 		F243F3A72DCE57D3002EBB09 /* Products */ = {
 			isa = PBXGroup;
