@@ -113,6 +113,21 @@ NSString *const UIElementUtilitiesNoDescription = @"No Description";
     return (__bridge id)(result);
 }
 
++ (id)valueOfAttributes:(NSString *)attribute ofUIElement:(AXUIElementRef)element
+{
+    CFArrayRef result = nil;
+    NSArray *attributeNames = [UIElementUtilities attributeNamesOfUIElement:element];
+
+    if (attributeNames) {
+        if ( [attributeNames indexOfObject:(NSString *)attribute] != NSNotFound
+            &&
+            AXUIElementCopyAttributeValues(element, (CFStringRef)attribute, 0, 999, &result) == kAXErrorSuccess
+            ) {
+        }
+    }
+    return (__bridge id)(result);
+}
+
 + (BOOL)canSetAttribute:(NSString *)attributeName ofUIElement:(AXUIElementRef)element {
     Boolean isSettable = false;
     
@@ -198,12 +213,19 @@ NSString *const UIElementUtilitiesNoDescription = @"No Description";
     return [[UIElementUtilities roleOfUIElement:element] isEqualToString:NSAccessibilityApplicationRole];
 }
 
-+ (NSArray *)childrenOfUIElement:(AXUIElementRef)element {
++ (NSArray<NSValue *> *)childrenOfUIElement:(AXUIElementRef)element {
     CFArrayRef children = nil;
 
     children = (__bridge CFArrayRef)([UIElementUtilities valueOfAttribute:NSAccessibilityChildrenAttribute ofUIElement:element]);
 
-    return (__bridge NSArray *)(children);
+    NSArray *childrenValues = (__bridge NSArray<NSValue *> *)(children);
+
+    if ([childrenValues count] > 0) {
+        return childrenValues;
+    } else {
+        children = (__bridge CFArrayRef)([UIElementUtilities valueOfAttributes:NSAccessibilityChildrenAttribute ofUIElement:element]);
+        return (__bridge NSArray<NSValue *> *)(children);
+    }
 }
 
 #pragma mark -

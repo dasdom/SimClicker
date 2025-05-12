@@ -723,23 +723,11 @@
                                     </menu>
                                 </popUpButtonCell>
                             </popUpButton>
-                            <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="t9S-y4-KBg">
-                                <rect key="frame" x="198" y="118" width="84" height="32"/>
-                                <buttonCell key="cell" type="push" title="Activate" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="X7J-jX-2fT">
-                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                    <font key="font" metaFont="system"/>
-                                </buttonCell>
-                                <connections>
-                                    <action selector="activate:" target="XfG-lQ-9wD" id="BHU-VN-zMq"/>
-                                </connections>
-                            </button>
                         </subviews>
                         <constraints>
                             <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="o2A-zE-1vv" secondAttribute="trailing" constant="20" symbolic="YES" id="DZn-RX-6me"/>
-                            <constraint firstItem="t9S-y4-KBg" firstAttribute="centerY" secondItem="m2S-Jp-Qdl" secondAttribute="centerY" id="Orm-b2-B65"/>
                             <constraint firstItem="o2A-zE-1vv" firstAttribute="leading" secondItem="m2S-Jp-Qdl" secondAttribute="leading" constant="20" symbolic="YES" id="S0A-5x-eTP"/>
                             <constraint firstItem="o2A-zE-1vv" firstAttribute="top" secondItem="m2S-Jp-Qdl" secondAttribute="top" constant="20" symbolic="YES" id="lE0-br-lRL"/>
-                            <constraint firstItem="t9S-y4-KBg" firstAttribute="centerX" secondItem="m2S-Jp-Qdl" secondAttribute="centerX" id="vgr-8V-7a3"/>
                         </constraints>
                     </view>
                     <connections>

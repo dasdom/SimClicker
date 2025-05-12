@@ -83,7 +83,8 @@ extern NSString *const UIElementUtilitiesNoDescription;
 + (AXUIElementRef)parentOfUIElement:(AXUIElementRef)element;
 + (NSString *)roleOfUIElement:(AXUIElementRef)element;
 + (NSString *)titleOfUIElement:(AXUIElementRef)element;
-+ (NSArray *)childrenOfUIElement:(AXUIElementRef)element;
++ (NSArray<NSValue *> *)childrenOfUIElement:(AXUIElementRef)element;
++ (NSArray *)lineageOfUIElement:(AXUIElementRef)element;
 
 + (BOOL)isApplicationUIElement:(AXUIElementRef)element;
 

@@ -8,10 +8,12 @@
 #import "DDHInfoViewController.h"
 #import "DDHOverlayWindowController.h"
 #import "UIElementUtilities.h"
+#import "DDHOverlayElement.h"
 
 @interface AppDelegate ()
 @property (nonatomic, strong) DDHOverlayWindowController *overlayWindowController;
 @property (nonatomic) AXUIElementRef simulatorRef;
+@property (nonatomic, strong) NSArray<DDHOverlayElement *> *overlayElements;
 @end
 
 @implementation AppDelegate
@@ -93,6 +95,32 @@
     NSWindow *window = NSApplication.sharedApplication.orderedWindows.firstObject;
 
     DDHInfoViewController *infoViewController = (DDHInfoViewController *)window.contentViewController;
+    infoViewController.inputHandler = ^(NSString * _Nonnull input) {
+
+        NSLog(@"input: %@", input);
+
+        NSUInteger index = [self.overlayElements indexOfObjectPassingTest:^BOOL(DDHOverlayElement * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+            return [obj.tag isEqualToString:input];
+        }];
+        if (index == NSNotFound) {
+            return;
+        }
+
+        AXUIElementRef element = (__bridge AXUIElementRef)self.overlayElements[index].uiElementValue;
+        pid_t pid = 0;
+        if ((pid = [UIElementUtilities processIdentifierOfUIElement:element])) {
+            // pull the target app forward
+            NSRunningApplication *targetApp = [NSRunningApplication runningApplicationWithProcessIdentifier:pid];
+            if ([targetApp activateWithOptions:NSApplicationActivateAllWindows]) {
+                // perform the action
+                [UIElementUtilities performAction:@"AXPress" ofUIElement:element];
+            }
+        }
+
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            [self showOverlays];
+        });
+    };
     [infoViewController updateSimulatorPickerWithNames:names];
 
     [window makeFirstResponder:infoViewController];
@@ -102,39 +130,87 @@
 
     [self.overlayWindowController showWindow:nil];
 
-//    NSString *role = [UIElementUtilities roleOfUIElement:self.simulatorRef];
-//    NSRect frame = [UIElementUtilities frameOfUIElement:self.simulatorRef];
-//    NSLog(@"sim: %@, role: %@, %@", self.simulatorRef, role, [NSValue valueWithRect:frame]);
+    self.overlayElements = [self overlayChildrenOfUIElement:self.simulatorRef index:0];
 
-    [self overlayChildrenOfUIElement:self.simulatorRef index:0];
+    [self.overlayWindowController addOverlays:self.overlayElements];
+
+    NSRunningApplication *currentApplication = [NSRunningApplication currentApplication];
+    [currentApplication activateWithOptions:NSApplicationActivateAllWindows];
 }
 
-- (void)overlayChildrenOfUIElement:(AXUIElementRef)element index:(NSInteger)index {
+- (NSArray<DDHOverlayElement *> *)overlayChildrenOfUIElement:(AXUIElementRef)element index:(NSInteger)index {
+    NSMutableArray<DDHOverlayElement *> *tempOverlayElements = [[NSMutableArray alloc] init];
+
+    NSLog(@">>> -----------------------------------------------------");
+//    NSString *description = [UIElementUtilities descriptionForUIElement:element attribute:@"AXChildren" beingVerbose:YES];
+//    NSLog(@"description: %@", description);
+
+    NSString *role = [UIElementUtilities roleOfUIElement:element];
+    NSRect frame = [UIElementUtilities frameOfUIElement:element];
+    NSLog(@"%@, role: %@, %@", element, role, [NSValue valueWithRect:frame]);
+
+//    NSArray *attributeNames = [UIElementUtilities attributeNamesOfUIElement:element];
+//    NSLog(@"attributeNames: %@", attributeNames);
+
+//    NSString *description = [UIElementUtilities stringDescriptionOfUIElement:element];
+//    NSLog(@"description: %@", description);
+
+    NSArray *lineage = [UIElementUtilities lineageOfUIElement:element];
+    NSLog(@"lineage: %@", lineage);
+
     NSArray<NSValue *> *children = [UIElementUtilities childrenOfUIElement:element];
+//    NSLog(@"children: %@", children);
 
-    NSMutableArray<NSValue *> *buttons = [[NSMutableArray alloc] initWithCapacity:[children count]];
-    NSMutableArray<NSValue *> *frames = [[NSMutableArray alloc] initWithCapacity:[children count]];
+    if (children.count < 1) {
+        NSLog(@"NO CHILDREN");
+    }
 
-    for (NSValue *child in children) {
+    for (NSInteger i = 0; i < [children count]; i++) {
+        NSValue *child = children[i];
+        AXUIElementRef uiElement = (__bridge AXUIElementRef)child;
+        NSString *role = [UIElementUtilities roleOfUIElement:uiElement];
+        NSRect frame = [UIElementUtilities frameOfUIElement:uiElement];
+        NSLog(@"----%@, role: %@, %@", child, role, [NSValue valueWithRect:frame]);
+    }
+
+    NSLog(@"<<< -----------------------------------------------------");
+
+    for (NSInteger i = 0; i < [children count]; i++) {
+        NSValue *child = children[i];
         AXUIElementRef uiElement = (__bridge AXUIElementRef)child;
         NSString *role = [UIElementUtilities roleOfUIElement:uiElement];
         NSRect frame = [UIElementUtilities frameOfUIElement:uiElement];
         NSLog(@"%@, role: %@, %@", child, role, [NSValue valueWithRect:frame]);
 
-        if ([role isEqualToString:@"AXButton"]) {
-            [buttons addObject:child];
-            [frames addObject:[NSValue valueWithRect:frame]];
-        } else if ([role isEqualToString:@"AXGroup"]) {
-            NSLog(@"--- going deeper");
-            [self overlayChildrenOfUIElement:uiElement index:index++];
+        if ([role isEqualToString:@"AXButton"] ||
+            [role isEqualToString:@"AXTextField"] ||
+            [role isEqualToString:@"AXStaticText"]) {
+
+            NSString *tag = [NSString stringWithFormat:@"%ld%ld", (long)index, (long)i];
+            NSLog(@"tag: %@", tag);
+            DDHOverlayElement *overlayElement = [[DDHOverlayElement alloc] initWithUIElementValue:child tag:tag];
+            [tempOverlayElements addObject:overlayElement];
+        } else if ([role isEqualToString:@"AXGroup"]
+//                   || [role isEqualToString:@"AXToolbar"]
+                   ) {
+//            NSLog(@">>> %ld", (long)index);
+            [tempOverlayElements addObjectsFromArray:[self overlayChildrenOfUIElement:uiElement index:++index]];
+
+            NSString *tag = [NSString stringWithFormat:@"%ld%ld", (long)index, (long)i];
+            NSLog(@"tag: %@", tag);
+            DDHOverlayElement *overlayElement = [[DDHOverlayElement alloc] initWithUIElementValue:child tag:tag];
+            [tempOverlayElements addObject:overlayElement];
+
+//            NSLog(@"<<< %ld", (long)index);
         } else if ([role isEqualToString:@"AXWindow"]) {
-            NSLog(@"--- going deeper");
+//            NSLog(@"--- going deeper");
             [self.overlayWindowController setFrame:[UIElementUtilities frameOfUIElement:uiElement]];
-            [self overlayChildrenOfUIElement:uiElement index:index++];
+            [tempOverlayElements addObjectsFromArray:[self overlayChildrenOfUIElement:uiElement index:index]];
         }
 
     }
-    [self.overlayWindowController addOverlaysWithFrames:frames elementIndex:index];
+
+    return [tempOverlayElements copy];
 }
 
 @end

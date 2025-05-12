@@ -1,5 +1,5 @@
 //  Created by Dominik Hauser on 09.05.25.
-//  
+//
 //
 
 
@@ -7,41 +7,45 @@
 
 @interface DDHInfoViewController ()
 @property (weak) IBOutlet NSPopUpButton *simulatorButton;
+@property (nonatomic, strong) NSMutableString *input;
+@property (nonatomic, strong) NSTimer *timer;
 @end
 
 @implementation DDHInfoViewController
 
 - (void)viewDidLoad {
-  [super viewDidLoad];
+    [super viewDidLoad];
 
-  // Do any additional setup after loading the view.
+    self.input = [[NSMutableString alloc] init];
 }
 
 
 - (void)setRepresentedObject:(id)representedObject {
-  [super setRepresentedObject:representedObject];
+    [super setRepresentedObject:representedObject];
 
-  // Update the view, if already loaded.
+    // Update the view, if already loaded.
 }
 
 - (void)updateSimulatorPickerWithNames:(NSArray<NSString *> *)names {
-  [self.simulatorButton removeAllItems];
+    [self.simulatorButton removeAllItems];
 
-  for (NSString *name in names) {
-    [self.simulatorButton addItemWithTitle:name];
-  }
+    for (NSString *name in names) {
+        [self.simulatorButton addItemWithTitle:name];
+    }
 }
 
 - (BOOL)acceptsFirstResponder {
-  return YES;
+    return YES;
 }
 
 - (void)keyDown:(NSEvent *)event {
-  NSLog(@"event %@", event);
-}
-
-- (IBAction)activate:(NSButton *)sender {
-    
+    NSLog(@"event %@", event);
+    self.timer = [NSTimer scheduledTimerWithTimeInterval:1 repeats:NO block:^(NSTimer * _Nonnull timer) {
+        [timer invalidate];
+        self.inputHandler(self.input);
+        self.input = [[NSMutableString alloc] init];
+    }];
+    [self.input appendString:event.characters];
 }
 
 @end

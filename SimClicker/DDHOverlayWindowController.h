@@ -7,9 +7,11 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DDHOverlayElement;
+
 @interface DDHOverlayWindowController : NSWindowController <NSWindowDelegate>
 - (void)setFrame:(NSRect)frame;
-- (void)addOverlaysWithFrames:(NSArray<NSValue *> *)frames elementIndex:(NSInteger)elementIndex;
+- (void)addOverlays:(NSArray<DDHOverlayElement *> *)overlayElements;
 @end
 
 NS_ASSUME_NONNULL_END

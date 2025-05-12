@@ -6,6 +6,7 @@
 #import <Cocoa/Cocoa.h>
 
 @interface DDHInfoViewController : NSViewController
-- (void)updateSimulatorPickerWithNames:(NSArray<NSString *> *)names;
+@property (nonatomic, copy, nullable) void (^inputHandler)(NSString *_Nonnull);
+- (void)updateSimulatorPickerWithNames:(NSArray<NSString *> *_Nonnull)names;
 @end
 
