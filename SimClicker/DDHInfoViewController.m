@@ -7,6 +7,7 @@
 
 @interface DDHInfoViewController ()
 @property (weak) IBOutlet NSPopUpButton *simulatorButton;
+@property (weak) IBOutlet NSTextField *inputTextField;
 @property (nonatomic, strong) NSMutableString *input;
 @property (nonatomic, strong) NSTimer *timer;
 @end
@@ -40,12 +41,17 @@
 
 - (void)keyDown:(NSEvent *)event {
     NSLog(@"event %@", event);
-    self.timer = [NSTimer scheduledTimerWithTimeInterval:1 repeats:NO block:^(NSTimer * _Nonnull timer) {
+   self.timer = [NSTimer scheduledTimerWithTimeInterval:0.5 repeats:NO block:^(NSTimer * _Nonnull timer) {
         [timer invalidate];
         self.inputHandler(self.input);
         self.input = [[NSMutableString alloc] init];
     }];
     [self.input appendString:event.characters];
+    self.inputTextField.stringValue = self.input;
+}
+
+- (IBAction)reload:(NSButton *)sender {
+    self.reloadHandler();
 }
 
 @end
