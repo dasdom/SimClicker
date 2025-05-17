@@ -685,7 +685,7 @@
             <objects>
                 <windowController id="B8D-0N-5wS" sceneMemberID="viewController">
                     <window key="window" title="Window" allowsToolTipsWhenApplicationIsInactive="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" animationBehavior="default" id="IQv-IB-iLA">
-                        <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
+                        <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES" utility="YES" nonactivatingPanel="YES"/>
                         <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
                         <rect key="contentRect" x="196" y="240" width="480" height="270"/>
                         <rect key="screenRect" x="0.0" y="0.0" width="1680" height="1027"/>
@@ -734,15 +734,24 @@
                                 </connections>
                             </button>
                             <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="E5d-sT-zhN">
-                                <rect key="frame" x="205" y="118" width="70" height="35"/>
-                                <textFieldCell key="cell" lineBreakMode="clipping" title="Input" id="7tj-dY-4IB">
+                                <rect key="frame" x="230" y="118" width="21" height="35"/>
+                                <textFieldCell key="cell" lineBreakMode="clipping" title="_" id="7tj-dY-4IB">
                                     <font key="font" metaFont="system" size="30"/>
+                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                </textFieldCell>
+                            </textField>
+                            <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="hU9-7I-3Yt">
+                                <rect key="frame" x="223" y="161" width="35" height="16"/>
+                                <textFieldCell key="cell" lineBreakMode="clipping" title="Input" id="nw6-hs-fCM">
+                                    <font key="font" metaFont="system"/>
                                     <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
                             </textField>
                         </subviews>
                         <constraints>
+                            <constraint firstItem="hU9-7I-3Yt" firstAttribute="centerX" secondItem="E5d-sT-zhN" secondAttribute="centerX" id="01Q-2b-tI5"/>
                             <constraint firstAttribute="trailing" secondItem="i3N-sX-5rj" secondAttribute="trailing" constant="20" symbolic="YES" id="4ff-fr-J9b"/>
                             <constraint firstItem="i3N-sX-5rj" firstAttribute="top" secondItem="m2S-Jp-Qdl" secondAttribute="top" constant="20" symbolic="YES" id="COh-wU-W2B"/>
                             <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="o2A-zE-1vv" secondAttribute="trailing" constant="20" symbolic="YES" id="DZn-RX-6me"/>
@@ -750,9 +759,11 @@
                             <constraint firstItem="E5d-sT-zhN" firstAttribute="centerX" secondItem="m2S-Jp-Qdl" secondAttribute="centerX" id="SRS-BT-0T9"/>
                             <constraint firstItem="E5d-sT-zhN" firstAttribute="centerY" secondItem="m2S-Jp-Qdl" secondAttribute="centerY" id="ej0-6y-qX5"/>
                             <constraint firstItem="o2A-zE-1vv" firstAttribute="top" secondItem="m2S-Jp-Qdl" secondAttribute="top" constant="20" symbolic="YES" id="lE0-br-lRL"/>
+                            <constraint firstItem="E5d-sT-zhN" firstAttribute="top" secondItem="hU9-7I-3Yt" secondAttribute="bottom" constant="8" symbolic="YES" id="qn6-wn-j03"/>
                         </constraints>
                     </view>
                     <connections>
+                        <outlet property="inputKeyLabel" destination="hU9-7I-3Yt" id="puv-nl-GQE"/>
                         <outlet property="inputTextField" destination="E5d-sT-zhN" id="KEY-Jp-Qlq"/>
                         <outlet property="simulatorButton" destination="o2A-zE-1vv" id="xVK-BR-jwg"/>
                     </connections>

@@ -8,6 +8,7 @@
 @interface DDHInfoViewController ()
 @property (weak) IBOutlet NSPopUpButton *simulatorButton;
 @property (weak) IBOutlet NSTextField *inputTextField;
+@property (weak) IBOutlet NSTextField *inputKeyLabel;
 @property (nonatomic, strong) NSMutableString *input;
 @property (nonatomic, strong) NSTimer *timer;
 @end
@@ -52,6 +53,15 @@
 
 - (IBAction)reload:(NSButton *)sender {
     self.reloadHandler();
+}
+
+- (void)startedScanning {
+    self.inputTextField.stringValue = @"Scanning...";
+    self.inputTextField.needsDisplay = YES;
+}
+
+- (void)stoppedScanning {
+    self.inputTextField.stringValue = @"_";
 }
 
 @end

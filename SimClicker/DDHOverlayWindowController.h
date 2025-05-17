@@ -10,9 +10,11 @@ NS_ASSUME_NONNULL_BEGIN
 @class DDHOverlayElement;
 
 @interface DDHOverlayWindowController : NSWindowController <NSWindowDelegate>
-- (void)setFrame:(NSRect)frame;
+@property (nonatomic) CGSize spacing;
+- (void)setFrame:(NSRect)frame spacing:(CGSize)spacing;
 - (void)reset;
 - (void)addOverlays:(NSArray<DDHOverlayElement *> *)overlayElements;
+- (void)toggleWindowHidden;
 @end
 
 NS_ASSUME_NONNULL_END

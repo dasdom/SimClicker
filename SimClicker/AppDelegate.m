@@ -11,6 +11,7 @@
 #import "DDHOverlayElement.h"
 
 @interface AppDelegate ()
+@property (nonatomic) CGSize spacing;
 @property (nonatomic, strong) DDHOverlayWindowController *overlayWindowController;
 @property (nonatomic, strong) DDHInfoViewController *infoViewController;
 @property (nonatomic) AXUIElementRef simulatorRef;
@@ -20,6 +21,8 @@
 @implementation AppDelegate
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification {
+
+    self.spacing = CGSizeMake(39, 39);
 
     [self checkAccessibility];
 
@@ -100,6 +103,11 @@
 
         NSLog(@"input: %@", input);
 
+        if ([input isEqualToString:@" "]) {
+            [self.overlayWindowController toggleWindowHidden];
+            return;
+        }
+
         NSUInteger index = [self.overlayElements indexOfObjectPassingTest:^BOOL(DDHOverlayElement * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
             return [obj.tag isEqualToString:input];
         }];
@@ -122,6 +130,7 @@
         NSRunningApplication *currentApplication = [NSRunningApplication currentApplication];
         [currentApplication activateWithOptions:NSApplicationActivateAllWindows];
 
+        [self.infoViewController startedScanning];
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
             [self showOverlays];
         });
@@ -146,70 +155,60 @@
 
     NSRunningApplication *currentApplication = [NSRunningApplication currentApplication];
     [currentApplication activateWithOptions:NSApplicationActivateAllWindows];
+
+    [self.infoViewController stoppedScanning];
 }
 
 - (NSArray<DDHOverlayElement *> *)overlayChildrenOfUIElement:(AXUIElementRef)element index:(NSInteger)index {
     NSMutableArray<DDHOverlayElement *> *tempOverlayElements = [[NSMutableArray alloc] init];
 
-//    NSArray *attributeNames = [UIElementUtilities attributeNamesOfUIElement:element];
-//    NSLog(@"attributeNames: %@", attributeNames);
-
     NSArray<NSValue *> *children = [UIElementUtilities childrenOfUIElement:element];
-//    NSLog(@"children: %@", children);
 
-    if (children.count < 1) {
-        NSLog(@">>> -----------------------------------------------------");
-        NSLog(@"NO CHILDREN");
-        NSString *role = [UIElementUtilities roleOfUIElement:element];
-        NSRect frame = [UIElementUtilities frameOfUIElement:element];
-        NSLog(@"%@, role: %@, %@", element, role, [NSValue valueWithRect:frame]);
-
-        NSArray *lineage = [UIElementUtilities lineageOfUIElement:element];
-        NSLog(@"lineage: %@", lineage);
-
-        NSString *description = [UIElementUtilities stringDescriptionOfUIElement:element];
-        NSLog(@"description: %@", description);
-        NSLog(@"<<< -----------------------------------------------------");
-    }
+//    if (children.count < 1) {
+//        NSLog(@">>> -----------------------------------------------------");
+//        NSLog(@"NO CHILDREN");
+//        NSString *role = [UIElementUtilities roleOfUIElement:element];
+//        NSRect frame = [UIElementUtilities frameOfUIElement:element];
+//        NSLog(@"%@, role: %@, %@", element, role, [NSValue valueWithRect:frame]);
+//
+//        NSArray *lineage = [UIElementUtilities lineageOfUIElement:element];
+//        NSLog(@"lineage: %@", lineage);
+//
+//        NSString *description = [UIElementUtilities stringDescriptionOfUIElement:element];
+//        NSLog(@"description: %@", description);
+//        NSLog(@"<<< -----------------------------------------------------");
+//    }
 
     for (NSInteger i = 0; i < [children count]; i++) {
         NSValue *child = children[i];
         AXUIElementRef uiElement = (__bridge AXUIElementRef)child;
         NSString *role = [UIElementUtilities roleOfUIElement:uiElement];
-//        NSRect frame = [UIElementUtilities frameOfUIElement:uiElement];
-//        NSLog(@"%@, role: %@, %@", child, role, [NSValue valueWithRect:frame]);
 
-        if ([role isEqualToString:@"AXButton"] ||
-            [role isEqualToString:@"AXTextField"] ||
-            [role isEqualToString:@"AXStaticText"]) {
-
-            NSString *tag = [NSString stringWithFormat:@"%ld%ld", (long)index, (long)i];
-            NSLog(@"tag: %@", tag);
-            DDHOverlayElement *overlayElement = [[DDHOverlayElement alloc] initWithUIElementValue:child tag:tag];
-            [tempOverlayElements addObject:overlayElement];
-        } else if ([role isEqualToString:@"AXGroup"]
-//                   || [role isEqualToString:@"AXToolbar"]
-                   ) {
-//            NSLog(@">>> %ld", (long)index);
-            NSArray<DDHOverlayElement *> *overlayElements = [self overlayChildrenOfUIElement:uiElement index:++index];
-            [tempOverlayElements addObjectsFromArray:overlayElements];
-
-            if (overlayElements.count < 1) {
-                NSString *tag = [NSString stringWithFormat:@"%ld%ld", (long)index, (long)i];
-                //            NSLog(@"tag: %@", tag);
-                DDHOverlayElement *overlayElement = [[DDHOverlayElement alloc] initWithUIElementValue:child tag:tag];
-                [tempOverlayElements addObject:overlayElement];
-            }
-
-//            NSLog(@"<<< %ld", (long)index);
-        } else if ([role isEqualToString:@"AXWindow"]) {
-//            NSLog(@"--- going deeper");
+//        if ([role isEqualToString:@"AXButton"] ||
+//            [role isEqualToString:@"AXTextField"] ||
+//            [role isEqualToString:@"AXStaticText"]) {
+//
+//            NSString *tag = [NSString stringWithFormat:@"%ld%ld", (long)index, (long)i];
+//            NSLog(@"tag: %@", tag);
+//            DDHOverlayElement *overlayElement = [[DDHOverlayElement alloc] initWithUIElementValue:child tag:tag];
+//            [tempOverlayElements addObject:overlayElement];
+//        } else if ([role isEqualToString:@"AXGroup"]) {
+//            NSArray<DDHOverlayElement *> *overlayElements = [self overlayChildrenOfUIElement:uiElement index:++index];
+//            [tempOverlayElements addObjectsFromArray:overlayElements];
+//
+//            if (overlayElements.count < 1) {
+//                NSString *tag = [NSString stringWithFormat:@"%ld%ld", (long)index, (long)i];
+//                DDHOverlayElement *overlayElement = [[DDHOverlayElement alloc] initWithUIElementValue:child tag:tag];
+//                [tempOverlayElements addObject:overlayElement];
+//            }
+//
+//        } else
+        if ([role isEqualToString:@"AXWindow"]) {
             NSRect frame = [UIElementUtilities frameOfUIElement:uiElement];
-            [self.overlayWindowController setFrame:frame];
+            [self.overlayWindowController setFrame:frame spacing:self.spacing];
 
-            NSArray<DDHOverlayElement *> *overlayElements =[self scanForUIElementsInFrame:frame];
+            NSArray<DDHOverlayElement *> *overlayElements = [self scanForUIElementsInFrame:frame];
             [tempOverlayElements addObjectsFromArray:overlayElements];
-//            [tempOverlayElements addObjectsFromArray:[self overlayChildrenOfUIElement:uiElement index:index]];
         }
 
     }
@@ -223,6 +222,8 @@
     NSInteger tagInt = 0;
     CGFloat y = frame.origin.y;
 
+//    NSLog(@"scanForUIElementsInFrame frame: %@", [NSValue valueWithRect:frame]);
+
     NSMutableSet<NSString *> *identifierArray = [[NSMutableSet alloc] init];
     AXUIElementRef previousElement = NULL;
 
@@ -230,8 +231,11 @@
     while (y < CGRectGetMaxY(frame)) {
         CGFloat x = frame.origin.x;
         while (x < CGRectGetMaxX(frame)) {
-            NSPoint cocoaPoint = CGPointMake(x, y);
-            CGPoint pointAsCGPoint = [UIElementUtilities carbonScreenPointFromCocoaScreenPoint:cocoaPoint];
+//            NSPoint cocoaPoint = CGPointMake(x, y);
+//            CGPoint pointAsCGPoint = [UIElementUtilities carbonScreenPointFromCocoaScreenPoint:cocoaPoint];
+
+            CGPoint pointAsCGPoint = CGPointMake(x, y);
+//            NSLog(@"pointAsCGPoint: %lf %lf", x, y);
 
             AXUIElementRef newElement = NULL;
             if (AXUIElementCopyElementAtPosition(self.simulatorRef, pointAsCGPoint.x, pointAsCGPoint.y, &newElement) == kAXErrorSuccess
@@ -242,7 +246,6 @@
                 NSRect frame = [UIElementUtilities frameOfUIElement:newElement];
 //                NSString *description = [UIElementUtilities descriptionOfAXDescriptionOfUIElement:newElement];
                 NSString *identifier = [NSString stringWithFormat:@"%@", [NSValue valueWithRect:frame]];
-//                NSLog(@"%@ %@, role: %@, %@, %@", newElement, identifier, role, description, [NSValue valueWithRect:frame]);
 
                 if ([role isEqualToString:@"AXButton"] ||
                     [role isEqualToString:@"AXTextField"] ||
@@ -250,6 +253,7 @@
                     [role isEqualToString:@"AXStaticText"] ||
                     [role isEqualToString:@"AXRadioButton"]) {
 
+//                    NSLog(@"%@ %@, role: %@, %@", newElement, role, description, [NSValue valueWithRect:frame]);
                     if (NO == [identifierArray containsObject:identifier]) {
                         previousElement = newElement;
                         [identifierArray addObject:identifier];
@@ -268,53 +272,17 @@
                     [role isEqualToString:@"AXTextField"]) {
                     x += frame.size.width;
                 } else {
-                    x += 39;
+                    x += self.spacing.width;
                 }
             } else {
-                x += 39;
+                x += self.spacing.width;
             }
         }
-        y += 39;
+        y += self.spacing.height;
     }
     NSLog(@"done in %lf s", -[startDate timeIntervalSinceNow]);
 
     return [tempOverlayElements copy];
 }
-
-//- (void)updateCurrentUIElement
-//{
-//    if (![self isInteractionWindowVisible]) {
-//
-//        // The current mouse position with origin at top right.
-//        NSPoint cocoaPoint = [NSEvent mouseLocation];
-//
-//        // Only ask for the UIElement under the mouse if has moved since the last check.
-//        if (!NSEqualPoints(cocoaPoint, _lastMousePoint)) {
-//
-//            CGPoint pointAsCGPoint = [UIElementUtilities carbonScreenPointFromCocoaScreenPoint:cocoaPoint];
-//
-//            AXUIElementRef newElement = NULL;
-//
-//            /* If the interaction window is not visible, but we still think we are interacting, change that */
-//            if (_currentlyInteracting) {
-//                _currentlyInteracting = ! _currentlyInteracting;
-//                [_inspectorWindowController indicateUIElementIsLocked:_currentlyInteracting];
-//            }
-//
-//            // Ask Accessibility API for UI Element under the mouse
-//            // And update the display if a different UIElement
-//            if (AXUIElementCopyElementAtPosition( _systemWideElement, pointAsCGPoint.x, pointAsCGPoint.y, &newElement ) == kAXErrorSuccess
-//                && newElement
-//                && ([self currentUIElement] == NULL || ! CFEqual( [self currentUIElement], newElement ))) {
-//
-//                [self setCurrentUIElement:newElement];
-//                [self updateUIElementInfoWithAnimation:NO];
-//
-//            }
-//
-//            _lastMousePoint = cocoaPoint;
-//        }
-//    }
-//}
 
 @end

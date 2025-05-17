@@ -6,9 +6,11 @@
 #import "DDHOverlayWindowController.h"
 #import "DDHOverlayElement.h"
 #import "UIElementUtilities.h"
+#import "DDHGridView.h"
 
 @interface DDHOverlayWindowController ()
 @property (nonatomic, strong) NSArray<NSView *> *overlayViews;
+@property (nonatomic, strong) DDHGridView *gridView;
 @end
 
 @implementation DDHOverlayWindowController
@@ -21,6 +23,7 @@
     window.level = NSStatusWindowLevel;
     window.backgroundColor = [NSColor clearColor];
     window.ignoresMouseEvents = YES;
+    window.hidesOnDeactivate = YES;
 
     if (self = [super initWithWindow:window]) {
         [window setDelegate:self];
@@ -28,8 +31,12 @@
     return self;
 }
 
-- (void)setFrame:(NSRect)frame {
+- (void)setFrame:(NSRect)frame spacing:(CGSize)spacing {
+    self.spacing = spacing;
     [self.window setFrame:frame display:NO];
+
+//    DDHGridView *gridView = [[DDHGridView alloc] initWithFrame:CGRectMake(0, 0, frame.size.width, frame.size.height) spacing:self.spacing];
+//    [self.window.contentView addSubview:gridView];
 }
 
 - (void)reset {
@@ -37,6 +44,16 @@
         [view removeFromSuperview];
     }
     self.overlayViews = nil;
+}
+
+- (void)toggleWindowHidden {
+    NSLog(@"orderedIndex %ld", (long)self.window.orderedIndex);
+    if (self.window.orderedIndex <= 1) {
+        [self.window orderOut:self];
+    } else {
+        [self.window orderFrontRegardless];
+    }
+    NSLog(@"orderedIndex %ld", (long)self.window.orderedIndex);
 }
 
 - (void)addOverlays:(NSArray<DDHOverlayElement *> *)overlayElements {
