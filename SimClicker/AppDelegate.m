@@ -9,10 +9,12 @@
 #import "DDHOverlayWindowController.h"
 #import "UIElementUtilities.h"
 #import "DDHOverlayElement.h"
+#import "DDHInfoWindowController.h"
 
 @interface AppDelegate ()
 @property (nonatomic) CGSize spacing;
 @property (nonatomic, strong) DDHOverlayWindowController *overlayWindowController;
+@property (nonatomic, strong) DDHInfoWindowController *infoWindowController;
 @property (nonatomic, strong) DDHInfoViewController *infoViewController;
 @property (nonatomic) AXUIElementRef simulatorRef;
 @property (nonatomic, strong) NSArray<DDHOverlayElement *> *overlayElements;
@@ -29,12 +31,13 @@
     [self findSimulators];
 
     [self showOverlays];
+
+    [self.infoWindowController showWindow:nil];
 }
 
 - (void)applicationWillTerminate:(NSNotification *)aNotification {
     // Insert code here to tear down your application
 }
-
 
 - (BOOL)applicationSupportsSecureRestorableState:(NSApplication *)app {
     return YES;
@@ -46,6 +49,51 @@
         _overlayWindowController = [[DDHOverlayWindowController alloc] init];
     }
     return _overlayWindowController;
+}
+
+- (DDHInfoWindowController *)infoWindowController {
+    if (nil == _infoWindowController) {
+        _infoWindowController = [[DDHInfoWindowController alloc] init];
+
+        __weak typeof(self)weakSelf = self;
+        _infoWindowController.inputHandler = ^(NSString * _Nonnull input) {
+
+            NSLog(@"input: %@", input);
+
+            if ([input isEqualToString:@" "]) {
+                [weakSelf.overlayWindowController toggleWindowHidden];
+                return;
+            }
+
+            NSUInteger index = [weakSelf.overlayElements indexOfObjectPassingTest:^BOOL(DDHOverlayElement * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+                return [obj.tag isEqualToString:input];
+            }];
+            if (index == NSNotFound) {
+                return;
+            }
+            [weakSelf.overlayWindowController reset];
+
+            AXUIElementRef element = (__bridge AXUIElementRef)weakSelf.overlayElements[index].uiElementValue;
+            pid_t pid = 0;
+            if ((pid = [UIElementUtilities processIdentifierOfUIElement:element])) {
+                // pull the target app forward
+                NSRunningApplication *targetApp = [NSRunningApplication runningApplicationWithProcessIdentifier:pid];
+                if ([targetApp activateWithOptions:NSApplicationActivateAllWindows]) {
+                    // perform the action
+                    [UIElementUtilities performAction:@"AXPress" ofUIElement:element];
+                }
+            }
+
+            NSRunningApplication *currentApplication = [NSRunningApplication currentApplication];
+            [currentApplication activateWithOptions:NSApplicationActivateAllWindows];
+
+            [weakSelf.infoViewController startedScanning];
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                [weakSelf showOverlays];
+            });
+        };
+    }
+    return _infoWindowController;
 }
 
 - (void)checkAccessibility {
@@ -142,7 +190,6 @@
     [infoViewController updateSimulatorPickerWithNames:names];
     self.infoViewController = infoViewController;
 
-    [window makeFirstResponder:infoViewController];
 }
 
 - (void)showOverlays {

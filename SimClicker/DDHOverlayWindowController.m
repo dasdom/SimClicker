@@ -23,7 +23,7 @@
     window.level = NSStatusWindowLevel;
     window.backgroundColor = [NSColor clearColor];
     window.ignoresMouseEvents = YES;
-    window.hidesOnDeactivate = YES;
+    window.hidesOnDeactivate = NO;
 
     if (self = [super initWithWindow:window]) {
         [window setDelegate:self];
