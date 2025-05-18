@@ -8,6 +8,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DDHInfoPanel : NSPanel
+@property (nonatomic, strong) NSProgressIndicator *progressIndicator;
 - (instancetype)initWithContentRect:(NSRect)contentRect;
 - (void)updateWithInput:(NSString *)input;
 @end

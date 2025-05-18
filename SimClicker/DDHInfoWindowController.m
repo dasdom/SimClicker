@@ -14,9 +14,8 @@
 
 @implementation DDHInfoWindowController
 
-- (instancetype)init {
-    NSRect contentRect = NSMakeRect(0, 200, 200, 200);
-    DDHInfoPanel *infoPanel = [[DDHInfoPanel alloc] initWithContentRect:contentRect];
+- (instancetype)initWithRect:(NSRect)rect {
+    DDHInfoPanel *infoPanel = [[DDHInfoPanel alloc] initWithContentRect:rect];
 
     if (self = [super initWithWindow:infoPanel]) {
         [NSEvent addGlobalMonitorForEventsMatchingMask:NSEventMaskKeyDown handler:^(NSEvent * _Nonnull event) {
@@ -46,6 +45,16 @@
     }];
     [self.input appendString:event.characters];
     [self.contentWindow updateWithInput:self.input];
+}
+
+- (void)startSpinner {
+    self.contentWindow.progressIndicator.hidden = NO;
+    [self.contentWindow.progressIndicator startAnimation:nil];
+}
+
+- (void)stopSpinner {
+    self.contentWindow.progressIndicator.hidden = YES;
+    [self.contentWindow.progressIndicator stopAnimation:nil];
 }
 
 @end

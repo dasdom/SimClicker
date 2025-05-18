@@ -47,13 +47,11 @@
 }
 
 - (void)toggleWindowHidden {
-    NSLog(@"orderedIndex %ld", (long)self.window.orderedIndex);
-    if (self.window.orderedIndex <= 1) {
+    if (self.window.visible) {
         [self.window orderOut:self];
     } else {
         [self.window orderFrontRegardless];
     }
-    NSLog(@"orderedIndex %ld", (long)self.window.orderedIndex);
 }
 
 - (void)addOverlays:(NSArray<DDHOverlayElement *> *)overlayElements {
