@@ -9,9 +9,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DDHInfoWindowController : NSWindowController
 @property (nonatomic, copy, nullable) void (^inputHandler)(NSString *_Nonnull);
-- (instancetype)initWithRect:(NSRect)rect;
+- (instancetype)initWithRect:(NSRect)rect possibleCharacters:(NSArray<NSString *> *)possibleCharacters;
 - (void)startSpinner;
 - (void)stopSpinner;
+- (void)reset;
 @end
 
 NS_ASSUME_NONNULL_END

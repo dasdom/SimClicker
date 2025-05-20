@@ -7,6 +7,7 @@
 #import "DDHOverlayElement.h"
 #import "UIElementUtilities.h"
 #import "DDHGridView.h"
+#import "DDHOverlayView.h"
 
 @interface DDHOverlayWindowController ()
 @property (nonatomic, strong) NSArray<NSView *> *overlayViews;
@@ -46,11 +47,19 @@
     self.overlayViews = nil;
 }
 
+- (void)hideWindow {
+    [self.window orderOut:self];
+}
+
+- (void)showWindow {
+    [self.window orderFrontRegardless];
+}
+
 - (void)toggleWindowHidden {
     if (self.window.visible) {
-        [self.window orderOut:self];
+        [self hideWindow];
     } else {
-        [self.window orderFrontRegardless];
+        [self showWindow];
     }
 }
 
@@ -67,40 +76,11 @@
         NSRect frame = [UIElementUtilities frameOfUIElement:uiElement];
         NSRect convertedFrame = [self.window convertRectFromScreen:frame];
 
-        NSString *role = [UIElementUtilities roleOfUIElement:uiElement];
+//        NSString *role = [UIElementUtilities roleOfUIElement:uiElement];
 
-        NSView *view = [[NSView alloc] initWithFrame:convertedFrame];
-        view.wantsLayer = YES;
+        DDHOverlayView *view = [[DDHOverlayView alloc] initWithFrame:convertedFrame];
 
-        if ([role isEqualToString:@"AXButton"] ||
-            [role isEqualToString:@"AXTextField"] ||
-            [role isEqualToString:@"AXStaticText"]) {
-            view.layer.borderColor = [[NSColor redColor] CGColor];
-        } else if ([role isEqualToString:@"AXGroup"]) {
-//            NSArray<NSValue *> *children = [UIElementUtilities childrenOfUIElement:uiElement];
-            overlayElement.tag = @"";//[NSString stringWithFormat:@"count %ld", (long)children.count];
-            view.layer.borderColor = [[NSColor yellowColor] CGColor];
-        } else if ([role isEqualToString:@"AXToolbar"]) {
-            view.layer.borderColor = [[NSColor magentaColor] CGColor];
-        } else {
-            view.layer.borderColor = [[NSColor greenColor] CGColor];
-        }
-        view.layer.borderWidth = 1;
-
-        NSTextField *textField = [[NSTextField alloc] initWithFrame:CGRectMake(0, 0, 40, 20)];
-//        textField.translatesAutoresizingMaskIntoConstraints = NO;
-
-        textField.font = [NSFont boldSystemFontOfSize:13];
-        textField.stringValue = overlayElement.tag;
-        [textField sizeToFit];
-        textField.textColor = [NSColor yellowColor];
-        textField.backgroundColor = [[NSColor blackColor] colorWithAlphaComponent:0.4];
-        [view addSubview:textField];
-
-//        [NSLayoutConstraint activateConstraints:@[
-//            [textField.topAnchor constraintEqualToAnchor:view.topAnchor],
-//            [textField.leadingAnchor constraintEqualToAnchor:view.leadingAnchor],
-//        ]];
+        [view updateWithText:overlayElement.tag];
 
         [overlayViews addObject:view];
 
@@ -108,6 +88,12 @@
     }
 
     self.overlayViews = [overlayViews copy];
+}
+
+- (void)updateWithSearchText:(NSString *)searchText {
+    for (DDHOverlayView *overlayView in self.overlayViews) {
+        [overlayView updateWithSearchText:searchText];
+    }
 }
 
 @end

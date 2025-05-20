@@ -33,7 +33,7 @@
             [_inputLabel.centerYAnchor constraintEqualToAnchor:self.contentView.centerYAnchor],
 
             [_progressIndicator.centerXAnchor constraintEqualToAnchor:_inputLabel.centerXAnchor],
-            [_progressIndicator.topAnchor constraintEqualToAnchor:_inputLabel.bottomAnchor],
+            [_progressIndicator.topAnchor constraintEqualToAnchor:_inputLabel.bottomAnchor constant:8],
         ]];
     }
     return self;

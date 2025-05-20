@@ -14,6 +14,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)setFrame:(NSRect)frame spacing:(CGSize)spacing;
 - (void)reset;
 - (void)addOverlays:(NSArray<DDHOverlayElement *> *)overlayElements;
+- (void)updateWithSearchText:(NSString *)searchText;
+- (void)hideWindow;
+- (void)showWindow;
 - (void)toggleWindowHidden;
 @end
 

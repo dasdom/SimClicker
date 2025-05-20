@@ -7,6 +7,7 @@
 #import "DDHInfoPanel.h"
 
 @interface DDHInfoWindowController ()
+@property (nonatomic, strong) NSArray<NSString *> *possibleCharacters;
 @property (nonatomic, strong) DDHInfoPanel *contentWindow;
 @property (nonatomic, strong) NSMutableString *input;
 @property (nonatomic, strong) NSTimer *timer;
@@ -14,7 +15,7 @@
 
 @implementation DDHInfoWindowController
 
-- (instancetype)initWithRect:(NSRect)rect {
+- (instancetype)initWithRect:(NSRect)rect possibleCharacters:(NSArray<NSString *> *)possibleCharacters {
     DDHInfoPanel *infoPanel = [[DDHInfoPanel alloc] initWithContentRect:rect];
 
     if (self = [super initWithWindow:infoPanel]) {
@@ -22,6 +23,7 @@
             [self keyDown:event];
         }];
 
+        _possibleCharacters = possibleCharacters;
         _input = [[NSMutableString alloc] init];
     }
     return self;
@@ -36,15 +38,31 @@
 
 }
 
+- (void)reset {
+    self.input = [[NSMutableString alloc] init];
+    [self.contentWindow updateWithInput:self.input];
+    self.inputHandler(self.input);
+    [self.timer invalidate];
+}
+
 - (void)keyDown:(NSEvent *)event {
     NSLog(@"global event %@", event);
-    self.timer = [NSTimer scheduledTimerWithTimeInterval:0.5 repeats:NO block:^(NSTimer * _Nonnull timer) {
-        [timer invalidate];
+    if ([self.possibleCharacters containsObject:[event.characters uppercaseString]]) {
+        [self.timer invalidate];
+
+        self.timer = [NSTimer scheduledTimerWithTimeInterval:5 repeats:NO block:^(NSTimer * _Nonnull timer) {
+            [timer invalidate];
+            [self reset];
+        }];
+
+        [self.input appendString:event.characters];
         self.inputHandler(self.input);
-        self.input = [[NSMutableString alloc] init];
-    }];
-    [self.input appendString:event.characters];
-    [self.contentWindow updateWithInput:self.input];
+        [self.contentWindow updateWithInput:self.input];
+
+        if (self.input.length == 2) {
+            [self.timer invalidate];
+        }
+    }
 }
 
 - (void)startSpinner {
@@ -53,6 +71,7 @@
 }
 
 - (void)stopSpinner {
+    [self reset];
     self.contentWindow.progressIndicator.hidden = YES;
     [self.contentWindow.progressIndicator stopAnimation:nil];
 }
