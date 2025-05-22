@@ -18,6 +18,7 @@
         _inputLabel.selectable = NO;
         _inputLabel.alignment = NSTextAlignmentCenter;
         _inputLabel.font = [NSFont boldSystemFontOfSize:30];
+        _inputLabel.placeholderString = @"Type tag";
 
         _progressIndicator = [[NSProgressIndicator alloc] init];
         _progressIndicator.translatesAutoresizingMaskIntoConstraints = NO;

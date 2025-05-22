@@ -55,7 +55,7 @@
             [self reset];
         }];
 
-        [self.input appendString:event.characters];
+        [self.input appendString:event.characters.uppercaseString];
         self.inputHandler(self.input);
         [self.contentWindow updateWithInput:self.input];
 

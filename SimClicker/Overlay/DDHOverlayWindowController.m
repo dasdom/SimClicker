@@ -36,8 +36,8 @@
     self.spacing = spacing;
     [self.window setFrame:frame display:NO];
 
-//    DDHGridView *gridView = [[DDHGridView alloc] initWithFrame:CGRectMake(0, 0, frame.size.width, frame.size.height) spacing:self.spacing];
-//    [self.window.contentView addSubview:gridView];
+    DDHGridView *gridView = [[DDHGridView alloc] initWithFrame:CGRectMake(0, 0, frame.size.width, frame.size.height) spacing:self.spacing];
+    [self.window.contentView addSubview:gridView];
 }
 
 - (void)reset {
@@ -72,9 +72,7 @@
     NSMutableArray<NSView *> *overlayViews = [[NSMutableArray alloc] init];
 
     for (DDHOverlayElement *overlayElement in overlayElements) {
-        AXUIElementRef uiElement = (__bridge AXUIElementRef)overlayElement.uiElementValue;
-        NSRect frame = [UIElementUtilities frameOfUIElement:uiElement];
-        NSRect convertedFrame = [self.window convertRectFromScreen:frame];
+        NSRect convertedFrame = [self.window convertRectFromScreen:overlayElement.frame];
 
 //        NSString *role = [UIElementUtilities roleOfUIElement:uiElement];
 

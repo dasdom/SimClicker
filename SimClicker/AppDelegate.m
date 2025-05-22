@@ -28,7 +28,7 @@
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification {
 
-    self.spacing = CGSizeMake(39, 39);
+    self.spacing = CGSizeMake(20, 20);
     self.possibleTags = [self generatePossibleTags];
 
     [self checkAccessibility];
@@ -79,7 +79,6 @@
             return;
         }
 
-        input = [input uppercaseString];
         NSLog(@"input: %@", input);
 
         if ([input isEqualToString:@" "]) {
@@ -240,6 +239,8 @@
 //        } else
         if ([role isEqualToString:@"AXWindow"]) {
             NSRect frame = [UIElementUtilities frameOfUIElement:uiElement];
+            NSLog(@"simulator frame: %@", [NSValue valueWithRect:frame]);
+            
             [self.overlayWindowController setFrame:frame spacing:self.spacing];
 
             if (nil == _infoWindowController) {
@@ -287,34 +288,29 @@
                 NSRect frame = [UIElementUtilities frameOfUIElement:newElement];
 //                NSString *description = [UIElementUtilities descriptionOfAXDescriptionOfUIElement:newElement];
                 NSString *identifier = [NSString stringWithFormat:@"%@", [NSValue valueWithRect:frame]];
+//                NSLog(@"%@ %@, role: %@, %@", newElement, role, description, [NSValue valueWithRect:frame]);
 
-                if ([role isEqualToString:@"AXButton"] ||
-                    [role isEqualToString:@"AXTextField"] ||
-                    [role isEqualToString:@"AXHeading"] ||
-                    [role isEqualToString:@"AXStaticText"] ||
-                    [role isEqualToString:@"AXRadioButton"]) {
+                if (NO == [role isEqualToString:@"AXGroup"]) {
 
-//                    NSLog(@"%@ %@, role: %@, %@", newElement, role, description, [NSValue valueWithRect:frame]);
                     if (NO == [identifierArray containsObject:identifier]) {
                         previousElement = newElement;
                         [identifierArray addObject:identifier];
                         NSString *tag = self.possibleTags[tagInt]; //[NSString stringWithFormat:@"%ld", (long)tagInt];
 //                        NSLog(@"tag: %@", tag);
-                        DDHOverlayElement *overlayElement = [[DDHOverlayElement alloc] initWithUIElementValue:(__bridge NSValue *)newElement tag:tag];
+                        DDHOverlayElement *overlayElement = [[DDHOverlayElement alloc] initWithUIElementValue:(__bridge NSValue *)newElement frame:frame tag:tag];
                         [tempOverlayElements addObject:overlayElement];
                         tagInt++;
                     }
                 } else {
                     previousElement = newElement;
-//                    NSLog(@"%@ %@, role: %@, %@, %@", newElement, identifier, role, description, [NSValue valueWithRect:frame]);
                 }
 
-                if ([role isEqualToString:@"AXButton"] ||
-                    [role isEqualToString:@"AXTextField"]) {
+//                if ([role isEqualToString:@"AXButton"] ||
+//                    [role isEqualToString:@"AXTextField"]) {
                     x += frame.size.width;
-                } else {
-                    x += self.spacing.width;
-                }
+//                } else {
+//                    x += self.spacing.width;
+//                }
             } else {
                 x += self.spacing.width;
             }
