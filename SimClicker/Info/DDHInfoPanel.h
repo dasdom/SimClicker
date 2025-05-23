@@ -13,6 +13,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) NSButton *rescanButton;
 - (instancetype)initWithContentRect:(NSRect)contentRect;
 - (void)updateWithInput:(NSString *)input;
+- (void)updateCount:(NSInteger)count duration:(CGFloat)duration;
 @end
 
 NS_ASSUME_NONNULL_END

@@ -15,6 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)startSpinner;
 - (void)stopSpinner;
 - (void)reset;
+- (void)updateCount:(NSInteger)count duration:(CGFloat)duration;
 @end
 
 NS_ASSUME_NONNULL_END

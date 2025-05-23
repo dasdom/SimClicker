@@ -119,13 +119,13 @@
         });
     };
 
-    _infoWindowController.gridToggleHandler = ^(BOOL showGrid) {
-        if (showGrid) {
-            [weakSelf.overlayWindowController showGrid];
-        } else {
-            [weakSelf.overlayWindowController hideGrid];
-        }
-    };
+//    _infoWindowController.gridToggleHandler = ^(BOOL showGrid) {
+//        if (showGrid) {
+//            [weakSelf.overlayWindowController showGrid];
+//        } else {
+//            [weakSelf.overlayWindowController hideGrid];
+//        }
+//    };
 
     _infoWindowController.rescanHandler = ^{
         [weakSelf.infoWindowController startSpinner];
@@ -214,7 +214,9 @@
         [self.infoWindowController stopSpinner];
     }];
 
-    NSLog(@"done in %lf s", -[startDate timeIntervalSinceNow]);
+    CGFloat duration = -[startDate timeIntervalSinceNow];
+    NSLog(@"done in %lf s", duration);
+    [self.infoWindowController updateCount:[self.overlayElements count] duration:duration];
 }
 
 - (NSArray<DDHOverlayElement *> *)overlayChildrenOfUIElement:(AXUIElementRef)element index:(NSInteger)index {
@@ -225,9 +227,8 @@
     for (NSInteger i = 0; i < [children count]; i++) {
         NSValue *child = children[i];
         AXUIElementRef uiElement = (__bridge AXUIElementRef)child;
-        NSRect frame = [UIElementUtilities frameOfUIElement:uiElement];
         NSString *role = [UIElementUtilities roleOfUIElement:uiElement];
-        NSString *description = [UIElementUtilities descriptionOfAXDescriptionOfUIElement:uiElement];
+//        NSString *description = [UIElementUtilities descriptionOfAXDescriptionOfUIElement:uiElement];
 //        NSLog(@"%@ %@, role: %@, %@", child, role, description, [NSValue valueWithRect:frame]);
 
         if ([role isEqualToString:@"AXGroup"]) {
@@ -235,11 +236,13 @@
             [tempOverlayElements addObjectsFromArray:overlayElements];
 
             if (overlayElements.count < 1) {
+                NSRect frame = [UIElementUtilities frameOfUIElement:uiElement];
                 NSArray<DDHOverlayElement *> *overlayElements = [self scanForUIElementsInFrame:frame];
                 [tempOverlayElements addObjectsFromArray:overlayElements];
             }
         } else if ([role isEqualToString:@"AXWindow"]) {
-            NSLog(@"simulator frame: %@", [NSValue valueWithRect:frame]);
+            NSRect frame = [UIElementUtilities frameOfUIElement:uiElement];
+//            NSLog(@"simulator frame: %@", [NSValue valueWithRect:frame]);
 
             [self.overlayWindowController setFrame:frame spacing:self.spacing];
 
@@ -270,47 +273,11 @@
 
     NSArray<NSValue *> *children = [UIElementUtilities childrenOfUIElement:element];
 
-//    if (children.count < 1) {
-//        NSLog(@">>> -----------------------------------------------------");
-//        NSLog(@"NO CHILDREN");
-//        NSString *role = [UIElementUtilities roleOfUIElement:element];
-//        NSRect frame = [UIElementUtilities frameOfUIElement:element];
-//        NSLog(@"%@, role: %@, %@", element, role, [NSValue valueWithRect:frame]);
-//
-//        NSArray *lineage = [UIElementUtilities lineageOfUIElement:element];
-//        NSLog(@"lineage: %@", lineage);
-//
-//        NSString *description = [UIElementUtilities stringDescriptionOfUIElement:element];
-//        NSLog(@"description: %@", description);
-//        NSLog(@"<<< -----------------------------------------------------");
-//    }
-
     for (NSInteger i = 0; i < [children count]; i++) {
         NSValue *child = children[i];
         AXUIElementRef uiElement = (__bridge AXUIElementRef)child;
         NSString *role = [UIElementUtilities roleOfUIElement:uiElement];
 
-//        if ([role isEqualToString:@"AXButton"] ||
-//            [role isEqualToString:@"AXTextField"] ||
-//            [role isEqualToString:@"AXStaticText"]) {
-//
-//            NSRect frame = [UIElementUtilities frameOfUIElement:element];
-//
-//            NSString *tag = [NSString stringWithFormat:@"%ld%ld", (long)index, (long)i];
-//            NSLog(@"tag: %@", tag);
-//            DDHOverlayElement *overlayElement = [[DDHOverlayElement alloc] initWithUIElementValue:child frame:frame tag:tag];
-//            [tempOverlayElements addObject:overlayElement];
-//        } else if ([role isEqualToString:@"AXGroup"]) {
-//            NSArray<DDHOverlayElement *> *overlayElements = [self overlayChildrenOfUIElement:uiElement index:++index];
-//            [tempOverlayElements addObjectsFromArray:overlayElements];
-//
-////            if (overlayElements.count < 1) {
-////                NSString *tag = [NSString stringWithFormat:@"%ld%ld", (long)index, (long)i];
-////                DDHOverlayElement *overlayElement = [[DDHOverlayElement alloc] initWithUIElementValue:child tag:tag];
-////                [tempOverlayElements addObject:overlayElement];
-////            }
-//
-//        } else
         if ([role isEqualToString:@"AXWindow"]) {
             NSRect frame = [UIElementUtilities frameOfUIElement:uiElement];
             NSLog(@"simulator frame: %@", [NSValue valueWithRect:frame]);

@@ -26,8 +26,8 @@
         _possibleCharacters = possibleCharacters;
         _input = [[NSMutableString alloc] init];
 
-        [infoPanel.showGridButton setTarget:self];
-        [infoPanel.showGridButton setAction:@selector(toggleGrid:)];
+        //        [infoPanel.showGridButton setTarget:self];
+        //        [infoPanel.showGridButton setAction:@selector(toggleGrid:)];
 
         [infoPanel.rescanButton setTarget:self];
         [infoPanel.rescanButton setAction:@selector(rescan:)];
@@ -83,12 +83,16 @@
 }
 
 // MARK: - Actions
-- (void)toggleGrid:(NSButton *)sender {
-    self.gridToggleHandler(sender.state);
-}
+//- (void)toggleGrid:(NSButton *)sender {
+//    self.gridToggleHandler(sender.state);
+//}
 
 - (void)rescan:(NSButton *)sender {
     self.rescanHandler();
+}
+
+- (void)updateCount:(NSInteger)count duration:(CGFloat)duration {
+    [self.contentWindow updateCount:count duration:duration];
 }
 
 @end

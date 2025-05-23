@@ -7,6 +7,7 @@
 
 @interface DDHInfoPanel ()
 @property (nonatomic, strong) NSTextField *inputLabel;
+@property (nonatomic, strong) NSTextField *countDurationLabel;
 @end
 
 @implementation DDHInfoPanel
@@ -14,40 +15,49 @@
     if (self = [super initWithContentRect:contentRect styleMask:NSWindowStyleMaskUtilityWindow | NSWindowStyleMaskResizable | NSWindowStyleMaskTitled | NSWindowStyleMaskNonactivatingPanel backing:NSBackingStoreBuffered defer:YES]) {
 
         _progressIndicator = [[NSProgressIndicator alloc] init];
-        _progressIndicator.translatesAutoresizingMaskIntoConstraints = NO;
         _progressIndicator.style = NSProgressIndicatorStyleSpinning;
         _progressIndicator.usesThreadedAnimation = YES;
 
         _inputLabel = [[NSTextField alloc] init];
-        _inputLabel.translatesAutoresizingMaskIntoConstraints = NO;
         _inputLabel.selectable = NO;
         _inputLabel.alignment = NSTextAlignmentCenter;
         _inputLabel.font = [NSFont boldSystemFontOfSize:30];
         _inputLabel.placeholderString = @"Type tag";
 
-        _showGridButton = [NSButton checkboxWithTitle:@"Grid" target:nil action:nil];
-        _showGridButton.translatesAutoresizingMaskIntoConstraints = NO;
+        NSStackView *inputStackView = [NSStackView stackViewWithViews:@[_inputLabel, _progressIndicator]];
+        inputStackView.distribution = NSStackViewDistributionFill;
+
+        _countDurationLabel = [NSTextField labelWithString:@"duration"];
+        _countDurationLabel.selectable = NO;
+        _countDurationLabel.alignment = NSTextAlignmentCenter;
+        _countDurationLabel.font = [NSFont preferredFontForTextStyle:NSFontTextStyleFootnote options:@{}];
+
+        NSStackView *stackView = [NSStackView stackViewWithViews:@[inputStackView, _countDurationLabel]];
+        stackView.translatesAutoresizingMaskIntoConstraints = NO;
+        stackView.orientation = NSUserInterfaceLayoutOrientationVertical;
+
+//        _showGridButton = [NSButton checkboxWithTitle:@"Grid" target:nil action:nil];
+//        _showGridButton.translatesAutoresizingMaskIntoConstraints = NO;
 
         _rescanButton = [NSButton buttonWithTitle:@"Re-Scan" target:nil action:nil];
         _rescanButton.translatesAutoresizingMaskIntoConstraints = NO;
 
-        [self.contentView addSubview:_inputLabel];
-        [self.contentView addSubview:_progressIndicator];
+        [self.contentView addSubview:stackView];
         [self.contentView addSubview:_showGridButton];
         [self.contentView addSubview:_rescanButton];
 
-        [NSLayoutConstraint activateConstraints:@[
-            [_inputLabel.topAnchor constraintEqualToAnchor:_progressIndicator.bottomAnchor],
-            [_inputLabel.leadingAnchor constraintEqualToAnchor:self.contentView.leadingAnchor constant:16],
-            [_inputLabel.trailingAnchor constraintEqualToAnchor:self.contentView.trailingAnchor constant:-16],
+        [_progressIndicator setContentHuggingPriority:NSLayoutPriorityRequired forOrientation:NSLayoutConstraintOrientationHorizontal];
 
-            [_progressIndicator.trailingAnchor constraintEqualToAnchor:self.contentView.layoutMarginsGuide.trailingAnchor],
-            [_progressIndicator.topAnchor constraintEqualToAnchor:self.contentView.layoutMarginsGuide.topAnchor],
+        [NSLayoutConstraint activateConstraints:@[
+            [stackView.topAnchor constraintEqualToAnchor:self.contentView.layoutMarginsGuide.topAnchor],
+            [stackView.leadingAnchor constraintEqualToAnchor:self.contentView.layoutMarginsGuide.leadingAnchor],
+            [stackView.trailingAnchor constraintEqualToAnchor:self.contentView.layoutMarginsGuide.trailingAnchor],
+
             [_progressIndicator.widthAnchor constraintEqualToConstant:20],
             [_progressIndicator.heightAnchor constraintEqualToAnchor:_progressIndicator.widthAnchor],
 
-            [_showGridButton.topAnchor constraintEqualToAnchor:_inputLabel.bottomAnchor constant:10],
-            [_showGridButton.centerXAnchor constraintEqualToAnchor:self.contentView.centerXAnchor],
+//            [_showGridButton.topAnchor constraintEqualToAnchor:_inputLabel.bottomAnchor constant:10],
+//            [_showGridButton.centerXAnchor constraintEqualToAnchor:self.contentView.centerXAnchor],
 
             [_rescanButton.leadingAnchor constraintEqualToAnchor:self.contentView.layoutMarginsGuide.leadingAnchor],
             [_rescanButton.bottomAnchor constraintEqualToAnchor:self.contentView.layoutMarginsGuide.bottomAnchor],
@@ -59,5 +69,9 @@
 
 - (void)updateWithInput:(NSString *)input {
     self.inputLabel.stringValue = input;
+}
+
+- (void)updateCount:(NSInteger)count duration:(CGFloat)duration {
+    self.countDurationLabel.stringValue = [NSString stringWithFormat:@"found %ld in %.2lf s", count, duration];
 }
 @end
