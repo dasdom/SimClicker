@@ -118,6 +118,22 @@
             [weakSelf showOverlays];
         });
     };
+
+    _infoWindowController.gridToggleHandler = ^(BOOL showGrid) {
+        if (showGrid) {
+            [weakSelf.overlayWindowController showGrid];
+        } else {
+            [weakSelf.overlayWindowController hideGrid];
+        }
+    };
+
+    _infoWindowController.rescanHandler = ^{
+        [weakSelf.infoWindowController startSpinner];
+        
+        [NSTimer scheduledTimerWithTimeInterval:0.1 repeats:NO block:^(NSTimer * _Nonnull timer) {
+            [weakSelf showOverlays];
+        }];
+    };
 }
 
 - (void)checkAccessibility {
@@ -273,10 +289,10 @@
     while (y < CGRectGetMaxY(frame)) {
         CGFloat x = frame.origin.x;
         while (x < CGRectGetMaxX(frame)) {
-//            NSPoint cocoaPoint = CGPointMake(x, y);
-//            CGPoint pointAsCGPoint = [UIElementUtilities carbonScreenPointFromCocoaScreenPoint:cocoaPoint];
+            NSPoint cocoaPoint = CGPointMake(x, y);
+            CGPoint pointAsCGPoint = [UIElementUtilities carbonScreenPointFromCocoaScreenPoint:cocoaPoint];
 
-            CGPoint pointAsCGPoint = CGPointMake(x, y);
+//            CGPoint pointAsCGPoint = CGPointMake(x, y);
 //            NSLog(@"pointAsCGPoint: %lf %lf", x, y);
 
             AXUIElementRef newElement = NULL;

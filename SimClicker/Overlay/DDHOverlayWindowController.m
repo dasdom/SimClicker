@@ -37,7 +37,9 @@
     [self.window setFrame:frame display:NO];
 
     DDHGridView *gridView = [[DDHGridView alloc] initWithFrame:CGRectMake(0, 0, frame.size.width, frame.size.height) spacing:self.spacing];
+    gridView.hidden = YES;  
     [self.window.contentView addSubview:gridView];
+    self.gridView = gridView;
 }
 
 - (void)reset {
@@ -45,6 +47,14 @@
         [view removeFromSuperview];
     }
     self.overlayViews = nil;
+}
+
+- (void)hideGrid {
+    self.gridView.hidden = YES;
+}
+
+- (void)showGrid {
+    self.gridView.hidden = NO;
 }
 
 - (void)hideWindow {

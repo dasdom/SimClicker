@@ -15,6 +15,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)reset;
 - (void)addOverlays:(NSArray<DDHOverlayElement *> *)overlayElements;
 - (void)updateWithSearchText:(NSString *)searchText;
+- (void)hideGrid;
+- (void)showGrid;
 - (void)hideWindow;
 - (void)showWindow;
 - (void)toggleWindowHidden;
