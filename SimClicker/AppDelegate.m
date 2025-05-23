@@ -28,7 +28,7 @@
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification {
 
-    self.spacing = CGSizeMake(20, 20);
+    self.spacing = CGSizeMake(15, 15);
     self.possibleTags = [self generatePossibleTags];
 
     [self checkAccessibility];
@@ -110,8 +110,8 @@
             }
         }
 
-//        NSRunningApplication *currentApplication = [NSRunningApplication currentApplication];
-//        [currentApplication activateWithOptions:NSApplicationActivateAllWindows];
+        //        NSRunningApplication *currentApplication = [NSRunningApplication currentApplication];
+        //        [currentApplication activateWithOptions:NSApplicationActivateAllWindows];
 
         //            [weakSelf.infoViewController startedScanning];
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
@@ -129,7 +129,7 @@
 
     _infoWindowController.rescanHandler = ^{
         [weakSelf.infoWindowController startSpinner];
-        
+
         [NSTimer scheduledTimerWithTimeInterval:0.1 repeats:NO block:^(NSTimer * _Nonnull timer) {
             [weakSelf showOverlays];
         }];
@@ -190,9 +190,16 @@
 
 - (void)showOverlays {
 
+    NSDate *startDate = [NSDate now];
+
     [self.overlayWindowController showWindow:nil];
 
     self.overlayElements = [self overlayChildrenOfUIElement:self.simulatorRef index:0];
+
+    for (NSInteger i = 0; i < [self.overlayElements count]; i++) {
+        DDHOverlayElement *overlayElement = self.overlayElements[i];
+        overlayElement.tag = self.possibleTags[i];
+    }
 
     [self.overlayWindowController addOverlays:self.overlayElements];
 
@@ -200,16 +207,65 @@
         [self.overlayWindowController hideWindow];
     }
 
-//    NSRunningApplication *currentApplication = [NSRunningApplication currentApplication];
-//    [currentApplication activateWithOptions:NSApplicationActivateAllWindows];
+    //    NSRunningApplication *currentApplication = [NSRunningApplication currentApplication];
+    //    [currentApplication activateWithOptions:NSApplicationActivateAllWindows];
 
     [NSTimer scheduledTimerWithTimeInterval:0.1 repeats:NO block:^(NSTimer * _Nonnull timer) {
         [self.infoWindowController stopSpinner];
     }];
-//    [self.infoViewController stoppedScanning];
+
+    NSLog(@"done in %lf s", -[startDate timeIntervalSinceNow]);
 }
 
 - (NSArray<DDHOverlayElement *> *)overlayChildrenOfUIElement:(AXUIElementRef)element index:(NSInteger)index {
+    NSMutableArray<DDHOverlayElement *> *tempOverlayElements = [[NSMutableArray alloc] init];
+
+    NSArray<NSValue *> *children = [UIElementUtilities childrenOfUIElement:element];
+
+    for (NSInteger i = 0; i < [children count]; i++) {
+        NSValue *child = children[i];
+        AXUIElementRef uiElement = (__bridge AXUIElementRef)child;
+        NSRect frame = [UIElementUtilities frameOfUIElement:uiElement];
+        NSString *role = [UIElementUtilities roleOfUIElement:uiElement];
+        NSString *description = [UIElementUtilities descriptionOfAXDescriptionOfUIElement:uiElement];
+//        NSLog(@"%@ %@, role: %@, %@", child, role, description, [NSValue valueWithRect:frame]);
+
+        if ([role isEqualToString:@"AXGroup"]) {
+            NSArray<DDHOverlayElement *> *overlayElements = [self overlayChildrenOfUIElement:uiElement index:index + 1];
+            [tempOverlayElements addObjectsFromArray:overlayElements];
+
+            if (overlayElements.count < 1) {
+                NSArray<DDHOverlayElement *> *overlayElements = [self scanForUIElementsInFrame:frame];
+                [tempOverlayElements addObjectsFromArray:overlayElements];
+            }
+        } else if ([role isEqualToString:@"AXWindow"]) {
+            NSLog(@"simulator frame: %@", [NSValue valueWithRect:frame]);
+
+            [self.overlayWindowController setFrame:frame spacing:self.spacing];
+
+            if (nil == _infoWindowController) {
+                NSRect infoFrame = NSMakeRect(frame.origin.x-200, frame.origin.y+frame.size.height-200, 200, 200);
+
+                [self setupInfoWindowControllerWithFrame:infoFrame];
+            }
+
+            NSArray<DDHOverlayElement *> *overlayElements = [self overlayChildrenOfUIElement:uiElement index:index + 1];
+            [tempOverlayElements addObjectsFromArray:overlayElements];
+
+        } else {
+            NSRect frame = [UIElementUtilities frameOfUIElement:uiElement];
+
+            NSString *tag = [NSString stringWithFormat:@"%ld%ld", (long)index, (long)i];
+//            NSLog(@"tag: %@", tag);
+            DDHOverlayElement *overlayElement = [[DDHOverlayElement alloc] initWithUIElementValue:child frame:frame tag:tag];
+            [tempOverlayElements addObject:overlayElement];
+        }
+    }
+
+    return [tempOverlayElements copy];
+}
+
+- (NSArray<DDHOverlayElement *> *)overlayElementsFromStartElement:(AXUIElementRef)element index:(NSInteger)index {
     NSMutableArray<DDHOverlayElement *> *tempOverlayElements = [[NSMutableArray alloc] init];
 
     NSArray<NSValue *> *children = [UIElementUtilities childrenOfUIElement:element];
@@ -238,19 +294,21 @@
 //            [role isEqualToString:@"AXTextField"] ||
 //            [role isEqualToString:@"AXStaticText"]) {
 //
+//            NSRect frame = [UIElementUtilities frameOfUIElement:element];
+//
 //            NSString *tag = [NSString stringWithFormat:@"%ld%ld", (long)index, (long)i];
 //            NSLog(@"tag: %@", tag);
-//            DDHOverlayElement *overlayElement = [[DDHOverlayElement alloc] initWithUIElementValue:child tag:tag];
+//            DDHOverlayElement *overlayElement = [[DDHOverlayElement alloc] initWithUIElementValue:child frame:frame tag:tag];
 //            [tempOverlayElements addObject:overlayElement];
 //        } else if ([role isEqualToString:@"AXGroup"]) {
 //            NSArray<DDHOverlayElement *> *overlayElements = [self overlayChildrenOfUIElement:uiElement index:++index];
 //            [tempOverlayElements addObjectsFromArray:overlayElements];
 //
-//            if (overlayElements.count < 1) {
-//                NSString *tag = [NSString stringWithFormat:@"%ld%ld", (long)index, (long)i];
-//                DDHOverlayElement *overlayElement = [[DDHOverlayElement alloc] initWithUIElementValue:child tag:tag];
-//                [tempOverlayElements addObject:overlayElement];
-//            }
+////            if (overlayElements.count < 1) {
+////                NSString *tag = [NSString stringWithFormat:@"%ld%ld", (long)index, (long)i];
+////                DDHOverlayElement *overlayElement = [[DDHOverlayElement alloc] initWithUIElementValue:child tag:tag];
+////                [tempOverlayElements addObject:overlayElement];
+////            }
 //
 //        } else
         if ([role isEqualToString:@"AXWindow"]) {
@@ -267,8 +325,9 @@
 
             NSArray<DDHOverlayElement *> *overlayElements = [self scanForUIElementsInFrame:frame];
             [tempOverlayElements addObjectsFromArray:overlayElements];
-        }
 
+            break;
+        }
     }
 
     return [tempOverlayElements copy];
@@ -285,7 +344,6 @@
     NSMutableSet<NSString *> *identifierArray = [[NSMutableSet alloc] init];
     AXUIElementRef previousElement = NULL;
 
-    NSDate *startDate = [NSDate now];
     while (y < CGRectGetMaxY(frame)) {
         CGFloat x = frame.origin.x;
         while (x < CGRectGetMaxX(frame)) {
@@ -333,7 +391,6 @@
         }
         y += self.spacing.height;
     }
-    NSLog(@"done in %lf s", -[startDate timeIntervalSinceNow]);
 
     return [tempOverlayElements copy];
 }
