@@ -4,6 +4,7 @@
 
 
 #import "AppDelegate.h"
+#import <Carbon/Carbon.h>
 #import <AppKit/NSAccessibility.h>
 #import "DDHInfoViewController.h"
 #import "DDHOverlayWindowController.h"
@@ -22,12 +23,35 @@
 @property (nonatomic, strong) NSArray<DDHOverlayElement *> *overlayElements;
 @property (nonatomic, strong) NSArray<NSString *> *possibleCharacters;
 @property (nonatomic, strong) NSArray<NSString *> *possibleTags;
+@property (nonatomic) BOOL isActive;
+@property (nonatomic) AXUIElementRef selectedElement;
 @end
 
 @implementation AppDelegate
 
+EventHotKeyRef    gMyHotKeyRef;
+
+OSStatus LockUIElementHotKeyHandler(EventHandlerCallRef nextHandler,EventRef theEvent, void *userData) {
+    AppDelegate *appController = (__bridge AppDelegate *)userData;
+    [NSTimer scheduledTimerWithTimeInterval:0.1 target:appController selector:@selector(toggleActivation:) userInfo:nil repeats:NO];
+    return noErr;
+}
+
+static OSStatus RegisterLockUIElementHotKey(void *userInfo) {
+
+    EventTypeSpec eventType = { kEventClassKeyboard, kEventHotKeyReleased };
+    InstallApplicationEventHandler(NewEventHandlerUPP(LockUIElementHotKeyHandler), 1, &eventType,(void *)userInfo, NULL);
+
+    EventHotKeyID hotKeyID = { 'lUIk', 1 }; // we make up the ID
+    return RegisterEventHotKey(kVK_Space, cmdKey | shiftKey, hotKeyID, GetApplicationEventTarget(), 0, &gMyHotKeyRef); // Cmd-F7 will be the key to hit
+
+}
+
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification {
 
+    RegisterLockUIElementHotKey((__bridge void *)self);
+
+    self.isActive = YES;
     self.spacing = CGSizeMake(15, 15);
     self.possibleTags = [self generatePossibleTags];
 
@@ -81,6 +105,79 @@
 
         NSLog(@"input: %@", input);
 
+        if (weakSelf.selectedElement) {
+            if ([input isEqualToString:@"enter"]) {
+                [NSTimer scheduledTimerWithTimeInterval:0.1 repeats:NO block:^(NSTimer * _Nonnull timer) {
+                    [weakSelf.infoWindowController startSpinner];
+                }];
+
+                [weakSelf.overlayWindowController reset];
+
+                pid_t pid = 0;
+                if ((pid = [UIElementUtilities processIdentifierOfUIElement:weakSelf.selectedElement])) {
+                    // pull the target app forward
+                    NSRunningApplication *targetApp = [NSRunningApplication runningApplicationWithProcessIdentifier:pid];
+                    if ([targetApp activateWithOptions:NSApplicationActivateAllWindows]) {
+                        // perform the action
+                        [UIElementUtilities performAction:@"AXPress" ofUIElement:weakSelf.selectedElement];
+                    }
+                }
+
+                weakSelf.selectedElement = nil;
+
+                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                    [weakSelf showOverlays];
+                });
+                return;
+            } else if ([input isEqualToString:@"up"]) {
+                [NSTimer scheduledTimerWithTimeInterval:0.1 repeats:NO block:^(NSTimer * _Nonnull timer) {
+                    [weakSelf.infoWindowController startSpinner];
+                }];
+
+                [weakSelf.overlayWindowController reset];
+
+                pid_t pid = 0;
+                if ((pid = [UIElementUtilities processIdentifierOfUIElement:weakSelf.selectedElement])) {
+                    // pull the target app forward
+                    NSRunningApplication *targetApp = [NSRunningApplication runningApplicationWithProcessIdentifier:pid];
+                    if ([targetApp activateWithOptions:NSApplicationActivateAllWindows]) {
+                        // perform the action
+                        [UIElementUtilities performAction:@"AXScrollUpByPage" ofUIElement:weakSelf.selectedElement];
+                    }
+                }
+
+                weakSelf.selectedElement = nil;
+
+                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                    [weakSelf showOverlays];
+                });
+                return;
+            } else if ([input isEqualToString:@"down"]) {
+                [NSTimer scheduledTimerWithTimeInterval:0.1 repeats:NO block:^(NSTimer * _Nonnull timer) {
+                    [weakSelf.infoWindowController startSpinner];
+                }];
+
+                [weakSelf.overlayWindowController reset];
+
+                pid_t pid = 0;
+                if ((pid = [UIElementUtilities processIdentifierOfUIElement:weakSelf.selectedElement])) {
+                    // pull the target app forward
+                    NSRunningApplication *targetApp = [NSRunningApplication runningApplicationWithProcessIdentifier:pid];
+                    if ([targetApp activateWithOptions:NSApplicationActivateAllWindows]) {
+                        // perform the action
+                        [UIElementUtilities performAction:@"AXScrollDownByPage" ofUIElement:weakSelf.selectedElement];
+                    }
+                }
+
+                weakSelf.selectedElement = nil;
+
+                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                    [weakSelf showOverlays];
+                });
+                return;
+            }
+        }
+
         if ([input isEqualToString:@" "]) {
             [weakSelf.overlayWindowController toggleWindowHidden];
             return;
@@ -89,34 +186,34 @@
         NSUInteger index = [weakSelf.overlayElements indexOfObjectPassingTest:^BOOL(DDHOverlayElement * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
             return [obj.tag isEqualToString:input];
         }];
-        if (index == NSNotFound) {
-            [weakSelf.overlayWindowController updateWithSearchText:input];
-            return;
-        }
-        [NSTimer scheduledTimerWithTimeInterval:0.1 repeats:NO block:^(NSTimer * _Nonnull timer) {
-            [weakSelf.infoWindowController startSpinner];
-        }];
 
-        [weakSelf.overlayWindowController reset];
+        [weakSelf.overlayWindowController updateWithSearchText:input];
 
-        AXUIElementRef element = (__bridge AXUIElementRef)weakSelf.overlayElements[index].uiElementValue;
-        pid_t pid = 0;
-        if ((pid = [UIElementUtilities processIdentifierOfUIElement:element])) {
-            // pull the target app forward
-            NSRunningApplication *targetApp = [NSRunningApplication runningApplicationWithProcessIdentifier:pid];
-            if ([targetApp activateWithOptions:NSApplicationActivateAllWindows]) {
-                // perform the action
-                [UIElementUtilities performAction:@"AXPress" ofUIElement:element];
-            }
+        if (index != NSNotFound) {
+            AXUIElementRef element = (__bridge AXUIElementRef)weakSelf.overlayElements[index].uiElementValue;
+            weakSelf.selectedElement = element;
         }
 
-        //        NSRunningApplication *currentApplication = [NSRunningApplication currentApplication];
-        //        [currentApplication activateWithOptions:NSApplicationActivateAllWindows];
 
-        //            [weakSelf.infoViewController startedScanning];
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-            [weakSelf showOverlays];
-        });
+//        [NSTimer scheduledTimerWithTimeInterval:0.1 repeats:NO block:^(NSTimer * _Nonnull timer) {
+//            [weakSelf.infoWindowController startSpinner];
+//        }];
+//
+//        [weakSelf.overlayWindowController reset];
+//
+//        pid_t pid = 0;
+//        if ((pid = [UIElementUtilities processIdentifierOfUIElement:element])) {
+//            // pull the target app forward
+//            NSRunningApplication *targetApp = [NSRunningApplication runningApplicationWithProcessIdentifier:pid];
+//            if ([targetApp activateWithOptions:NSApplicationActivateAllWindows]) {
+//                // perform the action
+//                [UIElementUtilities performAction:@"AXPress" ofUIElement:element];
+//            }
+//        }
+//
+//        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+//            [weakSelf showOverlays];
+//        });
     };
 
 //    _infoWindowController.gridToggleHandler = ^(BOOL showGrid) {
@@ -126,6 +223,13 @@
 //            [weakSelf.overlayWindowController hideGrid];
 //        }
 //    };
+
+    _infoWindowController.activateToggleHandler = ^(BOOL active) {
+        weakSelf.isActive = active;
+
+        [weakSelf.overlayWindowController activate:active];
+        [weakSelf.infoWindowController activate:active];
+    };
 
     _infoWindowController.rescanHandler = ^{
         [weakSelf.infoWindowController startSpinner];
@@ -196,12 +300,19 @@
 
     self.overlayElements = [self overlayChildrenOfUIElement:self.simulatorRef index:0];
 
+    DDHOverlayElement *toolbarElement;
     for (NSInteger i = 0; i < [self.overlayElements count]; i++) {
         DDHOverlayElement *overlayElement = self.overlayElements[i];
         overlayElement.tag = self.possibleTags[i];
+
+        NSLog(@"%@, %@, %@", overlayElement.tag, overlayElement.role, [NSValue valueWithRect:overlayElement.frame]);
+
+        if ([overlayElement.role isEqualToString:@"AXToolbar"]) {
+            toolbarElement = overlayElement;
+        }
     }
 
-    [self.overlayWindowController addOverlays:self.overlayElements];
+    [self.overlayWindowController addOverlays:self.overlayElements toolbarElement:toolbarElement];
 
     if (NO == self.simulator.ownsMenuBar) {
         [self.overlayWindowController hideWindow];
@@ -229,6 +340,7 @@
         AXUIElementRef uiElement = (__bridge AXUIElementRef)child;
         NSString *role = [UIElementUtilities roleOfUIElement:uiElement];
 //        NSString *description = [UIElementUtilities descriptionOfAXDescriptionOfUIElement:uiElement];
+//        NSRect frame = [UIElementUtilities frameOfUIElement:uiElement];
 //        NSLog(@"%@ %@, role: %@, %@", child, role, description, [NSValue valueWithRect:frame]);
 
         if ([role isEqualToString:@"AXGroup"]) {
@@ -240,6 +352,23 @@
                 NSArray<DDHOverlayElement *> *overlayElements = [self scanForUIElementsInFrame:frame];
                 [tempOverlayElements addObjectsFromArray:overlayElements];
             }
+        } else if ([role isEqualToString:@"AXToolbar"] ||
+                   [role isEqualToString:@"AXMenuBar"]) {
+            NSArray<DDHOverlayElement *> *overlayElements = [self overlayChildrenOfUIElement:uiElement index:index + 1];
+            [tempOverlayElements addObjectsFromArray:overlayElements];
+
+            if (overlayElements.count < 1) {
+                NSRect frame = [UIElementUtilities frameOfUIElement:uiElement];
+                NSArray<DDHOverlayElement *> *overlayElements = [self scanForUIElementsInFrame:frame];
+                [tempOverlayElements addObjectsFromArray:overlayElements];
+            }
+
+            NSRect frame = [UIElementUtilities frameOfUIElement:uiElement];
+
+            NSArray *actionNames = [UIElementUtilities actionNamesOfUIElement:uiElement];
+            NSString *tag = [NSString stringWithFormat:@"%ld%ld", (long)index, (long)i];
+            DDHOverlayElement *overlayElement = [[DDHOverlayElement alloc] initWithUIElementValue:child frame:frame role:role actionNames:actionNames tag:tag];
+            [tempOverlayElements addObject:overlayElement];
         } else if ([role isEqualToString:@"AXWindow"]) {
             NSRect frame = [UIElementUtilities frameOfUIElement:uiElement];
 //            NSLog(@"simulator frame: %@", [NSValue valueWithRect:frame]);
@@ -258,9 +387,9 @@
         } else {
             NSRect frame = [UIElementUtilities frameOfUIElement:uiElement];
 
+            NSArray *actionNames = [UIElementUtilities actionNamesOfUIElement:uiElement];
             NSString *tag = [NSString stringWithFormat:@"%ld%ld", (long)index, (long)i];
-//            NSLog(@"tag: %@", tag);
-            DDHOverlayElement *overlayElement = [[DDHOverlayElement alloc] initWithUIElementValue:child frame:frame tag:tag];
+            DDHOverlayElement *overlayElement = [[DDHOverlayElement alloc] initWithUIElementValue:child frame:frame role:role actionNames:actionNames tag:tag];
             [tempOverlayElements addObject:overlayElement];
         }
     }
@@ -327,6 +456,7 @@
 
                 NSString *role = [UIElementUtilities roleOfUIElement:newElement];
                 NSRect frame = [UIElementUtilities frameOfUIElement:newElement];
+
 //                NSString *description = [UIElementUtilities descriptionOfAXDescriptionOfUIElement:newElement];
                 NSString *identifier = [NSString stringWithFormat:@"%@", [NSValue valueWithRect:frame]];
 //                NSLog(@"%@ %@, role: %@, %@", newElement, role, description, [NSValue valueWithRect:frame]);
@@ -336,9 +466,10 @@
                     if (NO == [identifierArray containsObject:identifier]) {
                         previousElement = newElement;
                         [identifierArray addObject:identifier];
+                        NSArray *actionNames = [UIElementUtilities actionNamesOfUIElement:newElement];
                         NSString *tag = self.possibleTags[tagInt]; //[NSString stringWithFormat:@"%ld", (long)tagInt];
 //                        NSLog(@"tag: %@", tag);
-                        DDHOverlayElement *overlayElement = [[DDHOverlayElement alloc] initWithUIElementValue:(__bridge NSValue *)newElement frame:frame tag:tag];
+                        DDHOverlayElement *overlayElement = [[DDHOverlayElement alloc] initWithUIElementValue:(__bridge NSValue *)newElement frame:frame role:role actionNames:actionNames tag:tag];
                         [tempOverlayElements addObject:overlayElement];
                         tagInt++;
                     }
@@ -372,6 +503,14 @@
     } else {
         [self.overlayWindowController hideWindow];
     }
+}
+
+// MARK: - Actions
+- (void)toggleActivation:(id)sender {
+    self.isActive = !self.isActive;
+
+    [self.overlayWindowController activate:self.isActive];
+    [self.infoWindowController activate:self.isActive];
 }
 
 @end

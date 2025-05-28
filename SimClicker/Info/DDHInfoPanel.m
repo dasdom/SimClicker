@@ -32,7 +32,10 @@
         _countDurationLabel.alignment = NSTextAlignmentCenter;
         _countDurationLabel.font = [NSFont preferredFontForTextStyle:NSFontTextStyleFootnote options:@{}];
 
-        NSStackView *stackView = [NSStackView stackViewWithViews:@[inputStackView, _countDurationLabel]];
+        _activeButton = [NSButton checkboxWithTitle:@"Active" target:nil action:nil];
+        _activeButton.state = NSControlStateValueOn;
+
+        NSStackView *stackView = [NSStackView stackViewWithViews:@[inputStackView, _countDurationLabel, _activeButton]];
         stackView.translatesAutoresizingMaskIntoConstraints = NO;
         stackView.orientation = NSUserInterfaceLayoutOrientationVertical;
 
@@ -72,6 +75,6 @@
 }
 
 - (void)updateCount:(NSInteger)count duration:(CGFloat)duration {
-    self.countDurationLabel.stringValue = [NSString stringWithFormat:@"found %ld in %.2lf s", count, duration];
+    self.countDurationLabel.stringValue = [NSString stringWithFormat:@"found %ld elements in %.2lf s", count, duration];
 }
 @end

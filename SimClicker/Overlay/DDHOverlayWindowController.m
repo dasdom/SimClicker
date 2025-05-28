@@ -34,12 +34,16 @@
 
 - (void)setFrame:(NSRect)frame spacing:(CGSize)spacing {
     self.spacing = spacing;
-    [self.window setFrame:frame display:NO];
 
-//    DDHGridView *gridView = [[DDHGridView alloc] initWithFrame:CGRectMake(0, 0, frame.size.width, frame.size.height) spacing:self.spacing];
-//    gridView.hidden = YES;  
-//    [self.window.contentView addSubview:gridView];
-//    self.gridView = gridView;
+    NSRect screenFrame = [NSScreen mainScreen].visibleFrame;
+    screenFrame.origin.y = 20;
+    screenFrame.size.height = screenFrame.size.height + 20;
+    [self.window setFrame:screenFrame display:NO];
+
+    //    DDHGridView *gridView = [[DDHGridView alloc] initWithFrame:CGRectMake(0, 0, frame.size.width, frame.size.height) spacing:self.spacing];
+    //    gridView.hidden = YES;
+    //    [self.window.contentView addSubview:gridView];
+    //    self.gridView = gridView;
 }
 
 - (void)reset {
@@ -73,22 +77,33 @@
     }
 }
 
-- (void)addOverlays:(NSArray<DDHOverlayElement *> *)overlayElements {
+- (void)addOverlays:(NSArray<DDHOverlayElement *> *)overlayElements toolbarElement:(DDHOverlayElement *)toolbarElement {
 
     for (NSView *view in self.overlayViews) {
         [view removeFromSuperview];
     }
 
     NSMutableArray<NSView *> *overlayViews = [[NSMutableArray alloc] init];
+    //    NSRect convertedToolbarFrame = [self.window convertRectFromScreen:toolbarElement.frame];
+
+    //    BOOL needsToBeConverted = self.window.contentView.frame.size.width > self.window.contentView.frame.size.height;
 
     for (DDHOverlayElement *overlayElement in overlayElements) {
-        NSRect convertedFrame = [self.window convertRectFromScreen:overlayElement.frame];
+        //        NSRect convertedFrame = [self.window convertRectFromScreen:overlayElement.frame];
 
-//        NSString *role = [UIElementUtilities roleOfUIElement:uiElement];
+        //        NSLog(@"tag: %@, role: %@, frame: %@", overlayElement.tag, overlayElement.role, [NSValue valueWithRect:convertedFrame]);
+        //        if (needsToBeConverted) {
+        //            convertedFrame = [self flippedRectFromRect:convertedFrame toolbarFrame:convertedToolbarFrame];
+        //        }
 
-        DDHOverlayView *view = [[DDHOverlayView alloc] initWithFrame:convertedFrame];
+        NSRect movedFrame = NSOffsetRect(overlayElement.frame, 0, -20);
+        DDHOverlayView *view = [[DDHOverlayView alloc] initWithFrame:movedFrame];
 
-        [view updateWithText:overlayElement.tag];
+        if ([overlayElement.actionNames containsObject:@"AXScrollDownByPage"]) {
+            [view updateWithText:[NSString stringWithFormat:@"%@*", overlayElement.tag]];
+        } else {
+            [view updateWithText:overlayElement.tag];
+        }
 
         [overlayViews addObject:view];
 
@@ -101,6 +116,19 @@
 - (void)updateWithSearchText:(NSString *)searchText {
     for (DDHOverlayView *overlayView in self.overlayViews) {
         [overlayView updateWithSearchText:searchText];
+    }
+}
+
+//- (NSRect)flippedRectFromRect:(NSRect)rect toolbarFrame:(NSRect)toolbarFrame {
+////    return NSMakeRect(rect.origin.y, self.window.contentView.frame.size.height-toolbarFrame.size.height-rect.origin.x-30, rect.size.height, rect.size.width);
+//    return NSMakeRect(rect.origin.y, rect.origin.x, rect.size.height, rect.size.width);
+//}
+
+- (void)activate:(BOOL)activate {
+    if (activate) {
+        [self showWindow];
+    } else {
+        [self hideWindow];
     }
 }
 

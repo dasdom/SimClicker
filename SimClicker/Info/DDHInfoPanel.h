@@ -11,6 +11,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) NSProgressIndicator *progressIndicator;
 @property (nonatomic, strong) NSButton *showGridButton;
 @property (nonatomic, strong) NSButton *rescanButton;
+@property (nonatomic, strong) NSButton *activeButton;
 - (instancetype)initWithContentRect:(NSRect)contentRect;
 - (void)updateWithInput:(NSString *)input;
 - (void)updateCount:(NSInteger)count duration:(CGFloat)duration;

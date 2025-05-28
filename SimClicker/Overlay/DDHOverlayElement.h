@@ -10,8 +10,10 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DDHOverlayElement : NSObject
 @property (nonatomic, strong) NSValue *uiElementValue;
 @property (nonatomic) NSRect frame;
+@property (nonatomic, strong) NSString *role;
+@property (nonatomic, strong) NSArray<NSString *> *actionNames;
 @property (nonatomic, strong) NSString *tag;
-- (instancetype)initWithUIElementValue:(NSValue *)uiElementValue frame:(NSRect)frame tag:(NSString *)tag;
+- (instancetype)initWithUIElementValue:(NSValue *)uiElementValue frame:(NSRect)frame role:(NSString *)role actionNames:(NSArray<NSString *> *)actionNames tag:(NSString *)tag;
 @end
 
 NS_ASSUME_NONNULL_END

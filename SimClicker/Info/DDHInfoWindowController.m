@@ -11,6 +11,7 @@
 @property (nonatomic, strong) DDHInfoPanel *contentWindow;
 @property (nonatomic, strong) NSMutableString *input;
 @property (nonatomic, strong) NSTimer *timer;
+@property (nonatomic, weak) id eventMonitor;
 @end
 
 @implementation DDHInfoWindowController
@@ -19,9 +20,11 @@
     DDHInfoPanel *infoPanel = [[DDHInfoPanel alloc] initWithContentRect:rect];
 
     if (self = [super initWithWindow:infoPanel]) {
-        [NSEvent addGlobalMonitorForEventsMatchingMask:NSEventMaskKeyDown handler:^(NSEvent * _Nonnull event) {
-            [self keyDown:event];
-        }];
+//        self.eventMonitor = [NSEvent addGlobalMonitorForEventsMatchingMask:NSEventMaskKeyDown handler:^(NSEvent * _Nonnull event) {
+//            [self keyDown:event];
+//        }];
+
+        [self activate:YES];
 
         _possibleCharacters = possibleCharacters;
         _input = [[NSMutableString alloc] init];
@@ -31,6 +34,9 @@
 
         [infoPanel.rescanButton setTarget:self];
         [infoPanel.rescanButton setAction:@selector(rescan:)];
+
+        [infoPanel.activeButton setTarget:self];
+        [infoPanel.activeButton setAction:@selector(toggleActive:)];
     }
     return self;
 }
@@ -68,6 +74,12 @@
         if (self.input.length == 2) {
             [self.timer invalidate];
         }
+    } else if (event.keyCode == 36 || event.keyCode == 76) {
+        self.inputHandler(@"enter");
+    } else if (event.keyCode == 126) {
+        self.inputHandler(@"up");
+    } else if (event.keyCode == 125) {
+        self.inputHandler(@"down");
     }
 }
 
@@ -87,12 +99,30 @@
 //    self.gridToggleHandler(sender.state);
 //}
 
+- (void)toggleActive:(NSButton *)sender {
+    self.activateToggleHandler(sender.state);
+}
+
 - (void)rescan:(NSButton *)sender {
     self.rescanHandler();
 }
 
 - (void)updateCount:(NSInteger)count duration:(CGFloat)duration {
     [self.contentWindow updateCount:count duration:duration];
+}
+
+- (void)activate:(BOOL)activate {
+    if (activate) {
+        self.contentWindow.activeButton.state = NSControlStateValueOn;
+
+        self.eventMonitor = [NSEvent addGlobalMonitorForEventsMatchingMask:NSEventMaskKeyDown handler:^(NSEvent * _Nonnull event) {
+            [self keyDown:event];
+        }];
+    } else {
+        self.contentWindow.activeButton.state = NSControlStateValueOff;
+
+        [NSEvent removeMonitor:self.eventMonitor];
+    }
 }
 
 @end
