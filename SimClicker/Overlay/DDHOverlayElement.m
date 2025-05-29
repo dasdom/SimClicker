@@ -4,9 +4,10 @@
 
 
 #import "DDHOverlayElement.h"
+#import "DDHRole.h"
 
 @implementation DDHOverlayElement
-- (instancetype)initWithUIElementValue:(NSValue *)uiElementValue frame:(NSRect)frame role:(NSString *)role actionNames:(NSArray<NSString *> *)actionNames tag:(NSString *)tag {
+- (instancetype)initWithUIElementValue:(NSValue *)uiElementValue frame:(NSRect)frame role:(DDHRole *)role actionNames:(NSArray<NSString *> *)actionNames tag:(NSString *)tag {
     if (self = [super init]) {
         _uiElementValue = uiElementValue;
         _frame = frame;

@@ -13,17 +13,20 @@
 #import "DDHInfoWindowController.h"
 #import "DDHSimulatorManager.h"
 #import "NSArray+Extension.h"
+#import "DDHRole.h"
+#import "DDHCodeWindowController.h"
 
 @interface AppDelegate () <DDHInfoWindowControllerProtocol>
 //@property (nonatomic) CGSize spacing;
 @property (nonatomic, strong) DDHOverlayWindowController *overlayWindowController;
 @property (nonatomic, strong) DDHInfoWindowController *infoWindowController;
 @property (nonatomic, strong) DDHSimulatorManager *simulatorManager;
+@property (nonatomic, strong) DDHCodeWindowController *codeWindowController;
 @property (nonatomic, strong) NSArray<DDHOverlayElement *> *overlayElements;
 @property (nonatomic, strong) NSArray<NSString *> *possibleCharacters;
 //@property (nonatomic, strong) NSArray<NSString *> *possibleTags;
 @property (nonatomic) BOOL isActive;
-@property (nonatomic) AXUIElementRef selectedElement;
+@property (nonatomic, strong) DDHOverlayElement *selectedOverlayElement;
 @end
 
 @implementation AppDelegate
@@ -61,6 +64,9 @@ static OSStatus RegisterLockUIElementHotKey(void *userInfo) {
     [self showOverlays];
 
     [self.infoWindowController showWindow:nil];
+
+    self.codeWindowController = [[DDHCodeWindowController alloc] init];
+    [self.codeWindowController showWindow:nil];
 }
 
 - (void)applicationWillTerminate:(NSNotification *)aNotification {
@@ -184,7 +190,7 @@ static OSStatus RegisterLockUIElementHotKey(void *userInfo) {
     DDHOverlayElement *toolbarElement;
 
     for (DDHOverlayElement *overlayElement in self.overlayElements) {
-        if ([overlayElement.role isEqualToString:@"AXToolbar"]) {
+        if ([[overlayElement.role name] isEqualToString:@"AXToolbar"]) {
             toolbarElement = overlayElement;
             break;
         }
@@ -233,7 +239,7 @@ static OSStatus RegisterLockUIElementHotKey(void *userInfo) {
 
     NSLog(@"input: %@", input);
 
-    AXUIElementRef selectedElement = self.selectedElement;
+    AXUIElementRef selectedElement = (__bridge AXUIElementRef)self.selectedOverlayElement.uiElementValue;
 
     if (selectedElement) {
         if ([input isEqualToString:@"enter"]) {
@@ -253,7 +259,9 @@ static OSStatus RegisterLockUIElementHotKey(void *userInfo) {
                 }
             }
 
-            self.selectedElement = nil;
+            [self updateCodeForElement:self.selectedOverlayElement addTap:YES];
+
+            self.selectedOverlayElement = nil;
 
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
                 [self showOverlays];
@@ -263,16 +271,16 @@ static OSStatus RegisterLockUIElementHotKey(void *userInfo) {
     }
 
     if ([input isEqualToString:@"up"]) {
-        [self performActionWithName:@"AXScrollUpByPage" onElement:self.selectedElement];
+        [self performActionWithName:@"AXScrollUpByPage" onElement:selectedElement];
         return;
     } else if ([input isEqualToString:@"down"]) {
-        [self performActionWithName:@"AXScrollDownByPage" onElement:self.selectedElement];
+        [self performActionWithName:@"AXScrollDownByPage" onElement:selectedElement];
         return;
     } else if ([input isEqualToString:@"right"]) {
-        [self performActionWithName:@"AXScrollRightByPage" onElement:self.selectedElement];
+        [self performActionWithName:@"AXScrollRightByPage" onElement:selectedElement];
         return;
     } else if ([input isEqualToString:@"left"]) {
-        [self performActionWithName:@"AXScrollLeftByPage" onElement:self.selectedElement];
+        [self performActionWithName:@"AXScrollLeftByPage" onElement:selectedElement];
         return;
     }
 
@@ -288,9 +296,22 @@ static OSStatus RegisterLockUIElementHotKey(void *userInfo) {
     [self.overlayWindowController updateWithSearchText:input];
 
     if (index != NSNotFound) {
-        AXUIElementRef element = (__bridge AXUIElementRef)self.overlayElements[index].uiElementValue;
-        self.selectedElement = element;
+        DDHOverlayElement *overlayElement = self.overlayElements[index];
+        AXUIElementRef element = (__bridge AXUIElementRef)overlayElement.uiElementValue;
+        self.selectedOverlayElement = overlayElement;
+
+        NSLog(@"element: %@", [UIElementUtilities stringDescriptionOfUIElement:element]);
+
+        [self updateCodeForElement:overlayElement addTap:NO];
     }
+}
+
+- (void)updateCodeForElement:(DDHOverlayElement *)overlayElement addTap:(BOOL)addTap {
+    AXUIElementRef element = (__bridge AXUIElementRef)overlayElement.uiElementValue;
+    NSString *identifier = [UIElementUtilities descriptionForUIElement:element attribute:@"AXIdentifier" beingVerbose:YES];
+    NSString *description = [UIElementUtilities descriptionForUIElement:element attribute:@"AXDescription" beingVerbose:YES];
+    NSString *code = [NSString stringWithFormat:@"%@[@\"%@\"]%@", overlayElement.role.code, identifier ?: description, addTap ? @".tap()" : @""];
+    [self.codeWindowController updateWithCode:code];
 }
 
 @end

@@ -7,6 +7,7 @@
 #import <AppKit/AppKit.h>
 #import "DDHOverlayElement.h"
 #import "UIElementUtilities.h"
+#import "DDHRole.h"
 
 @interface DDHSimulatorManager ()
 @property (nonatomic) CGSize spacing;
@@ -90,12 +91,12 @@
     for (NSInteger i = 0; i < [children count]; i++) {
         NSValue *child = children[i];
         AXUIElementRef uiElement = (__bridge AXUIElementRef)child;
-        NSString *role = [UIElementUtilities roleOfUIElement:uiElement];
+        NSString *roleName = [UIElementUtilities roleOfUIElement:uiElement];
 //                NSString *description = [UIElementUtilities descriptionOfAXDescriptionOfUIElement:uiElement];
 //                NSRect frame = [UIElementUtilities frameOfUIElement:uiElement];
 //                NSLog(@"%@ %@, role: %@, %@", child, role, description, [NSValue valueWithRect:frame]);
 
-        if ([role isEqualToString:@"AXGroup"]) {
+        if ([roleName isEqualToString:@"AXGroup"]) {
             NSArray<DDHOverlayElement *> *overlayElements = [self overlayChildrenOfUIElement:uiElement index:index + 1];
             [tempOverlayElements addObjectsFromArray:overlayElements];
 
@@ -104,8 +105,8 @@
                 NSArray<DDHOverlayElement *> *overlayElements = [self scanForUIElementsInFrame:frame];
                 [tempOverlayElements addObjectsFromArray:overlayElements];
             }
-        } else if ([role isEqualToString:@"AXToolbar"] ||
-                   [role isEqualToString:@"AXMenuBar"]) {
+        } else if ([roleName isEqualToString:@"AXToolbar"] ||
+                   [roleName isEqualToString:@"AXMenuBar"]) {
             NSArray<DDHOverlayElement *> *overlayElements = [self overlayChildrenOfUIElement:uiElement index:index + 1];
             [tempOverlayElements addObjectsFromArray:overlayElements];
 
@@ -119,9 +120,10 @@
 
             NSArray *actionNames = [UIElementUtilities actionNamesOfUIElement:uiElement];
             NSString *tag = [NSString stringWithFormat:@"%ld%ld", (long)index, (long)i];
+            DDHRole *role = [[DDHRole alloc] initWithName:roleName];
             DDHOverlayElement *overlayElement = [[DDHOverlayElement alloc] initWithUIElementValue:child frame:frame role:role actionNames:actionNames tag:tag];
             [tempOverlayElements addObject:overlayElement];
-        } else if ([role isEqualToString:@"AXWindow"]) {
+        } else if ([roleName isEqualToString:@"AXWindow"]) {
 //            NSRect frame = [UIElementUtilities frameOfUIElement:uiElement];
             //            NSLog(@"simulator frame: %@", [NSValue valueWithRect:frame]);
 
@@ -133,6 +135,7 @@
 
             NSArray *actionNames = [UIElementUtilities actionNamesOfUIElement:uiElement];
             NSString *tag = [NSString stringWithFormat:@"%ld%ld", (long)index, (long)i];
+            DDHRole *role = [[DDHRole alloc] initWithName:roleName];
             DDHOverlayElement *overlayElement = [[DDHOverlayElement alloc] initWithUIElementValue:child frame:frame role:role actionNames:actionNames tag:tag];
             [tempOverlayElements addObject:overlayElement];
         }
@@ -190,20 +193,21 @@
                 && newElement
                 && (previousElement == NULL || NO == CFEqual(previousElement, newElement))) {
 
-                NSString *role = [UIElementUtilities roleOfUIElement:newElement];
+                NSString *roleName = [UIElementUtilities roleOfUIElement:newElement];
                 NSRect frame = [UIElementUtilities frameOfUIElement:newElement];
 
                 //                NSString *description = [UIElementUtilities descriptionOfAXDescriptionOfUIElement:newElement];
                 NSString *identifier = [NSString stringWithFormat:@"%@", [NSValue valueWithRect:frame]];
                 //                NSLog(@"%@ %@, role: %@, %@", newElement, role, description, [NSValue valueWithRect:frame]);
 
-                if (NO == [role isEqualToString:@"AXGroup"]) {
+                if (NO == [roleName isEqualToString:@"AXGroup"]) {
 
                     if (NO == [identifierArray containsObject:identifier]) {
                         previousElement = newElement;
                         [identifierArray addObject:identifier];
                         NSArray *actionNames = [UIElementUtilities actionNamesOfUIElement:newElement];
                         NSString *tag = self.possibleTags[tagInt];
+                        DDHRole *role = [[DDHRole alloc] initWithName:roleName];
                         //                        NSLog(@"tag: %@", tag);
                         DDHOverlayElement *overlayElement = [[DDHOverlayElement alloc] initWithUIElementValue:(__bridge NSValue *)newElement frame:frame role:role actionNames:actionNames tag:tag];
                         [tempOverlayElements addObject:overlayElement];
