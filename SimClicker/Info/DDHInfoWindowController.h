@@ -4,15 +4,15 @@
 
 
 #import <Cocoa/Cocoa.h>
+#import "DDHInfoWindowControllerProtocol.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DDHInfoWindowController : NSWindowController
-@property (nonatomic, copy, nullable) void (^inputHandler)(NSString *_Nonnull);
 @property (nonatomic, copy, nullable) void (^gridToggleHandler)(BOOL);
 @property (nonatomic, copy, nullable) void (^activateToggleHandler)(BOOL);
 @property (nonatomic, copy, nullable) void (^rescanHandler)(void);
-- (instancetype)initWithRect:(NSRect)rect possibleCharacters:(NSArray<NSString *> *)possibleCharacters;
+- (instancetype)initWithRect:(NSRect)rect delegate:(id<DDHInfoWindowControllerProtocol>)delegate possibleCharacters:(NSArray<NSString *> *)possibleCharacters;
 - (void)startSpinner;
 - (void)stopSpinner;
 - (void)reset;

@@ -7,6 +7,7 @@
 #import "DDHInfoPanel.h"
 
 @interface DDHInfoWindowController ()
+@property (nonatomic, weak) id<DDHInfoWindowControllerProtocol> delegate;
 @property (nonatomic, strong) NSArray<NSString *> *possibleCharacters;
 @property (nonatomic, strong) DDHInfoPanel *contentWindow;
 @property (nonatomic, strong) NSMutableString *input;
@@ -16,7 +17,7 @@
 
 @implementation DDHInfoWindowController
 
-- (instancetype)initWithRect:(NSRect)rect possibleCharacters:(NSArray<NSString *> *)possibleCharacters {
+- (instancetype)initWithRect:(NSRect)rect delegate:(id<DDHInfoWindowControllerProtocol>)delegate possibleCharacters:(NSArray<NSString *> *)possibleCharacters {
     DDHInfoPanel *infoPanel = [[DDHInfoPanel alloc] initWithContentRect:rect];
 
     if (self = [super initWithWindow:infoPanel]) {
@@ -26,6 +27,7 @@
 
         [self activate:YES];
 
+        _delegate = delegate;
         _possibleCharacters = possibleCharacters;
         _input = [[NSMutableString alloc] init];
 
@@ -53,33 +55,44 @@
 - (void)reset {
     self.input = [[NSMutableString alloc] init];
     [self.contentWindow updateWithInput:self.input];
-    self.inputHandler(self.input);
+    [self.delegate windowController:self processInput:self.input];
     [self.timer invalidate];
 }
 
 - (void)keyDown:(NSEvent *)event {
     NSLog(@"global event %@", event);
+    [self.timer invalidate];
+
+    self.timer = [NSTimer scheduledTimerWithTimeInterval:5 repeats:NO block:^(NSTimer * _Nonnull timer) {
+        [timer invalidate];
+        [self reset];
+    }];
+
+    [self.input appendString:event.characters.uppercaseString];
+
+    NSString *input;
     if ([self.possibleCharacters containsObject:[event.characters uppercaseString]]) {
-        [self.timer invalidate];
 
-        self.timer = [NSTimer scheduledTimerWithTimeInterval:5 repeats:NO block:^(NSTimer * _Nonnull timer) {
-            [timer invalidate];
-            [self reset];
-        }];
-
-        [self.input appendString:event.characters.uppercaseString];
-        self.inputHandler(self.input);
-        [self.contentWindow updateWithInput:self.input];
+        input = self.input;
+        [self.contentWindow updateWithInput:input];
 
         if (self.input.length == 2) {
             [self.timer invalidate];
         }
     } else if (event.keyCode == 36 || event.keyCode == 76) {
-        self.inputHandler(@"enter");
+        input = @"enter";
     } else if (event.keyCode == 126) {
-        self.inputHandler(@"up");
+        input = @"up";
     } else if (event.keyCode == 125) {
-        self.inputHandler(@"down");
+        input = @"down";
+    } else if (event.keyCode == 123) {
+        input = @"left";
+    } else if (event.keyCode == 124) {
+        input = @"right";
+    }
+
+    if (input) {
+        [self.delegate windowController:self processInput:input];
     }
 }
 

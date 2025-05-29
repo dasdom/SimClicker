@@ -32,8 +32,7 @@
     return self;
 }
 
-- (void)setFrame:(NSRect)frame spacing:(CGSize)spacing {
-    self.spacing = spacing;
+- (void)setFrame:(NSRect)frame {
 
     NSRect screenFrame = [NSScreen mainScreen].visibleFrame;
     screenFrame.origin.y = 20;

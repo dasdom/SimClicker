@@ -11,7 +11,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DDHOverlayWindowController : NSWindowController <NSWindowDelegate>
 @property (nonatomic) CGSize spacing;
-- (void)setFrame:(NSRect)frame spacing:(CGSize)spacing;
+- (void)setFrame:(NSRect)frame;
 - (void)reset;
 - (void)addOverlays:(NSArray<DDHOverlayElement *> *)overlayElements toolbarElement:(DDHOverlayElement *)toolbarElement;
 - (void)updateWithSearchText:(NSString *)searchText;
