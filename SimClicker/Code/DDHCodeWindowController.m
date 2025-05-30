@@ -5,19 +5,32 @@
 
 #import "DDHCodeWindowController.h"
 #import "DDHCodeWindow.h"
+#import "DDHCodeViewController.h"
 
 @interface DDHCodeWindowController ()
 @property (nonatomic, strong) DDHCodeWindow *contentWindow;
+@property (nonatomic, strong) DDHCodeViewController *codeViewController;
 @end
 
 @implementation DDHCodeWindowController
 
 - (instancetype)init {
-    NSRect frame = NSMakeRect(0, 0, 200, 200);
+    NSRect frame = NSMakeRect(0, 0, 400, 300);
     DDHCodeWindow *codeWindow = [[DDHCodeWindow alloc] initWithContentRect:frame];
+    codeWindow.minSize = frame.size;
 
     if (self = [super initWithWindow:codeWindow]) {
 
+        _codeViewController = [[DDHCodeViewController alloc] init];
+        _codeViewController.view.translatesAutoresizingMaskIntoConstraints = NO;
+        [self.contentWindow.contentView addSubview:_codeViewController.view];
+
+        [NSLayoutConstraint activateConstraints:@[
+            [_codeViewController.view.topAnchor constraintEqualToAnchor:self.contentWindow.contentView.topAnchor],
+            [_codeViewController.view.leadingAnchor constraintEqualToAnchor:self.contentWindow.contentView.leadingAnchor],
+            [_codeViewController.view.bottomAnchor constraintEqualToAnchor:self.contentWindow.contentView.bottomAnchor],
+            [_codeViewController.view.trailingAnchor constraintEqualToAnchor:self.contentWindow.contentView.trailingAnchor],
+        ]];
     }
     return self;
 }
@@ -28,12 +41,11 @@
 
 - (void)windowDidLoad {
     [super windowDidLoad];
-    
-    // Implement this method to handle any initialization after your window controller's window has been loaded from its nib file.
+
 }
 
-- (void)updateWithCode:(NSString *)code {
-    [self.contentWindow updateWithCode:code];
+- (void)updateWithCode:(NSString *)code updateLast:(BOOL)updateLast {
+    [self.codeViewController updateWithCode:code updateLast:updateLast];
 }
 
 @end

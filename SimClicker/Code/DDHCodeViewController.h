@@ -1,4 +1,4 @@
-//  Created by Dominik Hauser on 29.05.25.
+//  Created by Dominik Hauser on 30.05.25.
 //  
 //
 
@@ -7,7 +7,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DDHCodeWindowController : NSWindowController
+@interface DDHCodeViewController : NSViewController
 - (void)updateWithCode:(NSString *)code updateLast:(BOOL)updateLast;
 @end
 

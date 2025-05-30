@@ -310,8 +310,8 @@ static OSStatus RegisterLockUIElementHotKey(void *userInfo) {
     AXUIElementRef element = (__bridge AXUIElementRef)overlayElement.uiElementValue;
     NSString *identifier = [UIElementUtilities descriptionForUIElement:element attribute:@"AXIdentifier" beingVerbose:YES];
     NSString *description = [UIElementUtilities descriptionForUIElement:element attribute:@"AXDescription" beingVerbose:YES];
-    NSString *code = [NSString stringWithFormat:@"%@[@\"%@\"]%@", overlayElement.role.code, identifier ?: description, addTap ? @".tap()" : @""];
-    [self.codeWindowController updateWithCode:code];
+    NSString *code = [NSString stringWithFormat:@"%@[\"%@\"]%@", overlayElement.role.code, identifier ?: description, addTap ? @".tap()" : @""];
+    [self.codeWindowController updateWithCode:code updateLast:addTap];
 }
 
 @end
