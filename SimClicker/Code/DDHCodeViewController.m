@@ -5,10 +5,11 @@
 
 #import "DDHCodeViewController.h"
 #import "DDHCodeView.h"
+#import "DDHCodeViewDiffableDataSource.h"
 
 @interface DDHCodeViewController ()
 @property (nonatomic, strong) DDHCodeView *contentView;
-@property (nonatomic, strong) NSTableViewDiffableDataSource *dataSource;
+@property (nonatomic, strong) DDHCodeViewDiffableDataSource *dataSource;
 @property (nonatomic, strong) NSMutableArray<NSString *> *codeLines;
 @end
 
@@ -30,7 +31,7 @@
 
     NSTableView *tableView = self.contentView.tableView;
 
-    self.dataSource = [[NSTableViewDiffableDataSource alloc] initWithTableView:tableView cellProvider:^NSView * _Nonnull(NSTableView * _Nonnull tableView, NSTableColumn * _Nonnull column, NSInteger row, NSString * _Nonnull itemId) {
+    self.dataSource = [[DDHCodeViewDiffableDataSource alloc] initWithTableView:tableView cellProvider:^NSView * _Nonnull(NSTableView * _Nonnull tableView, NSTableColumn * _Nonnull column, NSInteger row, NSString * _Nonnull itemId) {
 
         NSTableCellView *cell = [[NSTableCellView alloc] init];
 

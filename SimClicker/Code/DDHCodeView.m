@@ -31,9 +31,6 @@
             [_scrollView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
             [_scrollView.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
             [_scrollView.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
-
-            [self.widthAnchor constraintEqualToConstant:400],
-            [self.heightAnchor constraintEqualToConstant:300],
         ]];
     }
     return self;

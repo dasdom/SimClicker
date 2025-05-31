@@ -126,6 +126,7 @@
 
 - (void)activate:(BOOL)activate {
     if (activate) {
+        [self reset];
         self.contentWindow.activeButton.state = NSControlStateValueOn;
 
         self.eventMonitor = [NSEvent addGlobalMonitorForEventsMatchingMask:NSEventMaskKeyDown handler:^(NSEvent * _Nonnull event) {

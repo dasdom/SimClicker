@@ -57,7 +57,7 @@ static OSStatus RegisterLockUIElementHotKey(void *userInfo) {
 
     [self checkAccessibility];
 
-    self.possibleCharacters = @[@"A", @"S", @"D", @"F", @"G", @"H", @"J", @"K", @"L"];
+    self.possibleCharacters = @[@"A", @"S", @"D", @"F", @"G", @"H", @"J", @"K", @"L", @"W", @"E", @"R", @"U", @"I", @"O"];
     self.simulatorManager = [[DDHSimulatorManager alloc] initWithPossibleCharacters:self.possibleCharacters];
     [self.simulatorManager.simulator addObserver:self forKeyPath:@"ownsMenuBar" options:NSKeyValueObservingOptionNew context:nil];
 
@@ -200,6 +200,7 @@ static OSStatus RegisterLockUIElementHotKey(void *userInfo) {
 
     if (NO == self.simulatorManager.simulator.ownsMenuBar) {
         [self.overlayWindowController hideWindow];
+        [self.infoWindowController activate:NO];
     }
 
     [NSTimer scheduledTimerWithTimeInterval:0.1 repeats:NO block:^(NSTimer * _Nonnull timer) {
@@ -218,8 +219,10 @@ static OSStatus RegisterLockUIElementHotKey(void *userInfo) {
 
     if (simulatorOwnsMenuBar) {
         [self.overlayWindowController showWindow];
+        [self.infoWindowController activate:YES];
     } else {
         [self.overlayWindowController hideWindow];
+        [self.infoWindowController activate:NO];
     }
 }
 
