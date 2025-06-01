@@ -80,4 +80,13 @@
     [self updateWithCodeLines:self.codeLines];
 }
 
+- (NSString *)lastCodeLine {
+    if (self.codeLines.count < 1) {
+        return nil;
+    }
+
+    NSArray<NSString *> *components = [self.codeLines.lastObject componentsSeparatedByString:@":-)"];
+    return components.lastObject;
+}
+
 @end

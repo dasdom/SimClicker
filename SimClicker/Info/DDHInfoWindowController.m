@@ -89,6 +89,8 @@
         input = @"left";
     } else if (event.keyCode == 124) {
         input = @"right";
+    } else if ([event.characters isEqualToString:@"c"] && event.modifierFlags & NSEventModifierFlagCommand) {
+        input = @"copy";
     }
 
     if (input) {

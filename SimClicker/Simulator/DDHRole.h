@@ -16,6 +16,7 @@ typedef NS_ENUM(NSInteger, AXRole) {
     AXRoleToolbar,
     AXRoleMenuBar,
     AXRoleMenuBarItem,
+    AXRoleAXRadioButton,
 };
 
 @interface DDHRole : NSObject

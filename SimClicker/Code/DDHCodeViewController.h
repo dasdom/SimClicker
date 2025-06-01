@@ -9,6 +9,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DDHCodeViewController : NSViewController
 - (void)updateWithCode:(NSString *)code updateLast:(BOOL)updateLast;
+- (NSString *)lastCodeLine;
 @end
 
 NS_ASSUME_NONNULL_END

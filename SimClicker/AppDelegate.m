@@ -64,9 +64,6 @@ static OSStatus RegisterLockUIElementHotKey(void *userInfo) {
     [self showOverlays];
 
     [self.infoWindowController showWindow:nil];
-
-    self.codeWindowController = [[DDHCodeWindowController alloc] init];
-    [self.codeWindowController showWindow:nil];
 }
 
 - (void)applicationWillTerminate:(NSNotification *)aNotification {
@@ -180,9 +177,13 @@ static OSStatus RegisterLockUIElementHotKey(void *userInfo) {
     [self.overlayWindowController setFrame:frame];
 
     if (nil == _infoWindowController) {
-        NSRect infoFrame = NSMakeRect(frame.origin.x-200, frame.origin.y+frame.size.height-200, 200, 200);
+        NSRect infoFrame = NSMakeRect(frame.origin.x-200, frame.origin.y+frame.size.height-200-40, 200, 200);
 
         [self setupInfoWindowControllerWithFrame:infoFrame];
+
+        NSRect codeWindowRect = NSMakeRect(frame.origin.x-400, infoFrame.origin.y-300-30, 400, 300);
+        self.codeWindowController = [[DDHCodeWindowController alloc] initWithRect:codeWindowRect];
+        [self.codeWindowController showWindow:nil];
     }
 
     self.overlayElements = [self.simulatorManager overlayChildren];
@@ -284,6 +285,13 @@ static OSStatus RegisterLockUIElementHotKey(void *userInfo) {
         return;
     } else if ([input isEqualToString:@"left"]) {
         [self performActionWithName:@"AXScrollLeftByPage" onElement:selectedElement];
+        return;
+    } else if ([input isEqualToString:@"copy"]) {
+        NSString *lastCode = [self.codeWindowController lastCodeLine];
+        if (lastCode) {
+            [[NSPasteboard generalPasteboard] clearContents];
+            [[NSPasteboard generalPasteboard] setString:lastCode forType:NSPasteboardTypeString];
+        }
         return;
     }
 

@@ -14,6 +14,7 @@ NSString * const AXRoleName[] = {
     [AXRoleToolbar] = @"AXToolbar",
     [AXRoleMenuBar] = @"AXMenuBar",
     [AXRoleMenuBarItem] = @"AXMenuBarItem",
+    [AXRoleAXRadioButton] = @"AXRadioButton",
 };
 
 NSString * const AXRoleCode[] = {
@@ -25,6 +26,7 @@ NSString * const AXRoleCode[] = {
     [AXRoleToolbar] = @"unsupported",
     [AXRoleMenuBar] = @"unsupported",
     [AXRoleMenuBarItem] = @"unsupported",
+    [AXRoleAXRadioButton] = @"buttons",
 };
 
 @interface DDHRole ()
@@ -48,6 +50,8 @@ NSString * const AXRoleCode[] = {
             _role = AXRoleMenuBar;
         } else if ([name isEqualToString:AXRoleName[AXRoleMenuBarItem]]) {
             _role = AXRoleMenuBarItem;
+        } else if ([name isEqualToString:AXRoleName[AXRoleAXRadioButton]]) {
+            _role = AXRoleAXRadioButton;
         } else {
             NSLog(@">>> Unsupported role name: %@", name);
             _role = AXRoleUnsupported;

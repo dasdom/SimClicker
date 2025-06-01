@@ -14,10 +14,10 @@
 
 @implementation DDHCodeWindowController
 
-- (instancetype)init {
-    NSRect frame = NSMakeRect(0, 0, 400, 300);
-    DDHCodeWindow *codeWindow = [[DDHCodeWindow alloc] initWithContentRect:frame];
-    codeWindow.minSize = frame.size;
+- (instancetype)initWithRect:(NSRect)rect {
+//    NSRect frame = NSMakeRect(0, 0, 400, 300);
+    DDHCodeWindow *codeWindow = [[DDHCodeWindow alloc] initWithContentRect:rect];
+    codeWindow.minSize = rect.size;
 
     if (self = [super initWithWindow:codeWindow]) {
 
@@ -46,6 +46,10 @@
 
 - (void)updateWithCode:(NSString *)code updateLast:(BOOL)updateLast {
     [self.codeViewController updateWithCode:code updateLast:updateLast];
+}
+
+- (NSString *)lastCodeLine {
+    return [self.codeViewController lastCodeLine];
 }
 
 @end
